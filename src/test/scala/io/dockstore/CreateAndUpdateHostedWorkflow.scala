@@ -7,25 +7,30 @@ import java.util.UUID.randomUUID
 
 object CreateAndUpdateHostedWorkflow {
 
-  def workflowName() = randomUUID().toString
+  private def workflowName() = randomUUID().toString
 
-  val feeder = csv("tokens.csv").random
+  private val tokenFeeder = csv("data/tokens.csv").random
+  private val workflowNameFeeder = Iterator.continually(Map("workflowName" ->randomUUID().toString))
 
-  val create = feed(feeder).exec(http("Create Hosted Workflow")
-    .post("/workflows/hostedEntry?name=${workflowName()}&descriptorType=wdl")
-    .header("Authorization", "Bearer ${token}")
-    .check(status in(200, 201)) // Should be 201, but https://github.com/ga4gh/dockstore/issues/1859
-    .check(jsonPath("$.id").saveAs("id")))
-    .exec(http("Add file to Hosted Workflow")
-      .patch("/workflows/hostedentry/${id}")
+  def create(times: Int) = repeat(times) {
+    feed(tokenFeeder).feed(workflowNameFeeder).exec(http("Create Hosted Workflow")
+      .post("/workflows/hostedEntry")
+      .queryParam("name", "${workflowName}")
+      .queryParam("descriptorType", "wdl")
       .header("Authorization", "Bearer ${token}")
-      .body(RawFileBody("CreateHostedSimulation_0011_request.txt"))
-      .check(status is 200))
-    .exec(http("Save new revision of Hosted Workflow")
-      .patch("/workflows/hostedentry/${id}")
-      .header("Authorization", "Bearer ${token}")
-      .body(RawFileBody("CreateHostedSimulation_0018_request.txt"))
-      .check(status is 200))
+      .check(status in(200, 201)) // Should be 201, but https://github.com/ga4gh/dockstore/issues/1859
+      .check(jsonPath("$.id").saveAs("id")))
+      .exec(http("Add file to Hosted Workflow")
+        .patch("/workflows/hostedEntry/${id}")
+        .headers(Map("Authorization" -> "Bearer ${token}", "Content-type" -> "application/json"))
+        .body(RawFileBody("bodies/CreateHostedWdl.txt"))
+        .check(status is 200))
+      .exec(http("Save new revision of Hosted Workflow")
+        .patch("/workflows/hostedEntry/${id}")
+        .headers(Map("Authorization" -> "Bearer ${token}", "Content-type" -> "application/json"))
+        .body(RawFileBody("bodies/UpdateHostedWdl.txt"))
+        .check(status is 200))
+  }
 
 }
 
@@ -109,7 +114,7 @@ object CreateAndUpdateHostedWorkflow {
 //.resources(http("request_11")
 //.patch("/workflows/hostedEntry/6898")
 //.headers(headers_11)
-//.body(RawFileBody("CreateHostedSimulation_0011_request.txt")),
+//.body(RawFileBody("CreateHostedWdl.txt")),
 //http("request_12")
 //.get("/workflows/6898")
 //.headers(headers_1),
@@ -134,7 +139,7 @@ object CreateAndUpdateHostedWorkflow {
 //.exec(http("request_18")
 //.patch("/workflows/hostedEntry/6898")
 //.headers(headers_11)
-//.body(RawFileBody("CreateHostedSimulation_0018_request.txt"))
+//.body(RawFileBody("UpdateHostedWdl.txt"))
 //.resources(http("request_19")
 //.get("/workflows/6898")
 //.headers(headers_1),
