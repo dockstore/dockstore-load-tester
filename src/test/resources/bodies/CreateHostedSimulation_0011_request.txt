@@ -1,0 +1,1 @@
+[{"content":"task hello {\n  String pattern\n  File in\n\n  command {\n    egrep '${pattern}' '${in}'\n  }\n\n  runtime {\n    docker: \"broadinstitute/my_image\"\n  }\n\n  output {\n    Array[String] matches = read_lines(stdout())\n  }\n}\n\nworkflow wf {\n  call hello\n}","path":"/Dockstore.wdl","type":"DOCKSTORE_WDL"}]
