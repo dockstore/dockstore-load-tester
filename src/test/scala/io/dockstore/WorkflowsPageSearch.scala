@@ -3,12 +3,13 @@ package io.dockstore
 import java.net.URLEncoder
 
 import io.gatling.core.Predef._
-import io.gatling.core.session
 import io.gatling.http.Predef._
 
 object WorkflowsPageSearch {
 
-  val search = exec(http("Workflows List Page")
+  private val searchTermFeeder = csv("data/searchTerms.csv").random
+
+  val search = feed(searchTermFeeder).exec(http("Workflows List Page")
     .get("/workflows/published")
     .queryParam("offset", 0)
     .queryParam("limit", 10)
@@ -21,44 +22,46 @@ object WorkflowsPageSearch {
       .get("/workflows/published")
       .queryParam("offset", 0)
       .queryParam("limit", 10)
-      .queryParam("filter", "topmed")
+      .queryParam("filter", "${term}")
       .queryParam("sortCol", "stars")
       .queryParam("sortOrder", "desc")
       .check(status is 200)
       .check(jsonPath("$[*].id").findRandom.saveAs("id"))
-      .check(jsonPath("$[*].full_workflow_path").findRandom.saveAs("fullWorkflowPath")))
+      .check(jsonPath("$[*].full_workflow_path").findRandom.transform(path => URLEncoder.encode(path))saveAs("repo"))
+//        .check((jsonPath("$[*]['id, 'full_workflow_path]").ofType[(String, String)].findRandom.saveAs("foo")))
+      )
     .exec(session => {
-      val map = session("row")
-      println(map)
       println(session)
-    session
-      val unescapedPath = session("fullWorkflowPath").as[String]
-      session.set("repo", URLEncoder.encode(unescapedPath))
-        .set("fullWorkflowPath", (URLEncoder.encode("#/workflow/" + unescapedPath)))
+      session
+//      val unescapedPath = session("fullWorkflowPath").as[String]
+//      session.set("repo", URLEncoder.encode(unescapedPath))
+//        .set("fullWorkflowPath", (URLEncoder.encode("#/workflow/" + unescapedPath)))
     })
     .pause(5)
     .exec(http("Published Worfklow")
       .get("/workflows/path/workflow/${repo}/published")
-      .check(jsonPath("$.defaultVersion").saveAs("version")))
-    .exec(http("Load TopMed Workflow")
-      .get("/metadata/descriptorLanguageList")
-      .resources(
-        http("Get starred users")
-          .get("/workflows/${id}/starredUsers")
-          .check(status is 200),
-        http("Get NFL files")
-          .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/NFL/files")
-          .check(status in(200, 404)),
-        http("Get CWL files")
-          .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/CWL/files")
-          .check(status in(200, 404)),
-        http("Get WDL files")
-          .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/WDL/files")
-          .check(status in(200, 404)),
-        http("Get tag")
-          .get("/workflows/${id}/secondaryWdl?tag=${version}")
-      )
+      .check(jsonPath("$.defaultVersion").saveAs("version"))
     )
+    .doIf("${version != null}") { //TODO: Figure out a way to get the first version if null
+      exec(http("Load TopMed Workflow")
+        .get("/metadata/descriptorLanguageList")
+        .resources(
+          http("Get starred users")
+            .get("/workflows/${id}/starredUsers")
+            .check(status is 200),
+          http("Get NFL files")
+            .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/NFL/files")
+            .check(status in(200, 404)),
+          http("Get CWL files")
+            .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/CWL/files")
+            .check(status in(200, 404)),
+          http("Get WDL files")
+            .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/WDL/files")
+            .check(status in(200, 404)),
+          http("Get tag")
+            .get("/workflows/${id}/secondaryWdl?tag=${version}")
+        ))
+    }
 
 
   //    .exec(http("request_6")

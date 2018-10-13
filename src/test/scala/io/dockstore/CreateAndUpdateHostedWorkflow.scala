@@ -7,12 +7,11 @@ import java.util.UUID.randomUUID
 
 object CreateAndUpdateHostedWorkflow {
 
-  private def workflowName() = randomUUID().toString
-
   private val tokenFeeder = csv("data/tokens.csv").random
   private val workflowNameFeeder = Iterator.continually(Map("workflowName" ->randomUUID().toString))
 
-  def create(times: Int) = repeat(times) {
+
+  def create() =
     feed(tokenFeeder).feed(workflowNameFeeder).exec(http("Create Hosted Workflow")
       .post("/workflows/hostedEntry")
       .queryParam("name", "${workflowName}")
@@ -30,8 +29,6 @@ object CreateAndUpdateHostedWorkflow {
         .headers(Map("Authorization" -> "Bearer ${token}", "Content-type" -> "application/json"))
         .body(RawFileBody("bodies/UpdateHostedWdl.txt"))
         .check(status is 200))
-  }
-
 }
 
 
