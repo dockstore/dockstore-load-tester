@@ -9,6 +9,6 @@ class DockstoreSimulation extends Simulation {
 
     val scn = scenario("Home Page").exec(HomePage.open, WorkflowsPageSearch.search, CreateAndUpdateHostedWorkflow.create)
 
-  setUp(scn.inject(atOnceUsers(1))).protocols(HttpProtocols.localhostHttpProtocol)
+  setUp(scn.inject(atOnceUsers(5))).protocols(HttpProtocols.localhostHttpProtocol)
 //  setUp(scn.inject(rampUsers(20) during(30 seconds))).protocols(HttpProtocols.localhostHttpProtocol)
 }

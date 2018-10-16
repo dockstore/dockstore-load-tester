@@ -2,12 +2,13 @@ package io.dockstore
 
 import java.net.URLEncoder
 
+import io.gatling.commons.util.TypeHelper
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
 object WorkflowsPageSearch {
 
-  private val searchTermFeeder = csv("data/searchTerms.csv").random
+  private val searchTermFeeder = csv("data/workflowSearchTerms.csv").random
 
   val search = feed(searchTermFeeder).exec(http("Workflows List Page")
     .get("/workflows/published")
@@ -27,40 +28,41 @@ object WorkflowsPageSearch {
       .queryParam("sortOrder", "desc")
       .check(status is 200)
       .check(jsonPath("$[*].id").findRandom.saveAs("id"))
-      .check(jsonPath("$[*].full_workflow_path").findRandom.transform(path => URLEncoder.encode(path))saveAs("repo"))
-//        .check((jsonPath("$[*]['id, 'full_workflow_path]").ofType[(String, String)].findRandom.saveAs("foo")))
-      )
-    .exec(session => {
-      println(session)
-      session
-//      val unescapedPath = session("fullWorkflowPath").as[String]
-//      session.set("repo", URLEncoder.encode(unescapedPath))
-//        .set("fullWorkflowPath", (URLEncoder.encode("#/workflow/" + unescapedPath)))
-    })
+      .check(jsonPath("$[?(@.id == ${id})].full_workflow_path").transform(path => URLEncoder.encode(path)).saveAs("repo"))
+      .check(jsonPath("$[?(@.id == ${id})].full_workflow_path").transform(path => URLEncoder.encode("#/workflow/" + path)).saveAs("fullWorkflowPath"))
+      .check(jsonPath("$[?(@.id == ${id})].descriptorType").saveAs("descriptorType"))
+    )
     .pause(5)
     .exec(http("Published Worfklow")
       .get("/workflows/path/workflow/${repo}/published")
       .check(jsonPath("$.defaultVersion").saveAs("version"))
+      .check(jsonPath("$.workflowVersions[0].name").saveAs("firstVersion"))
     )
-    .doIf("${version != null}") { //TODO: Figure out a way to get the first version if null
-      exec(http("Load TopMed Workflow")
-        .get("/metadata/descriptorLanguageList")
-        .resources(
-          http("Get starred users")
-            .get("/workflows/${id}/starredUsers")
-            .check(status is 200),
-          http("Get NFL files")
-            .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/NFL/files")
-            .check(status in(200, 404)),
-          http("Get CWL files")
-            .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/CWL/files")
-            .check(status in(200, 404)),
-          http("Get WDL files")
-            .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/WDL/files")
-            .check(status in(200, 404)),
-          http("Get tag")
-            .get("/workflows/${id}/secondaryWdl?tag=${version}")
-        ))
+    .exec(session => {
+      // Sometimes default version is not set; grab the first version in that case.
+      val hasVersion = (session("version").validate[String] != TypeHelper.NullValueFailure)
+      if (hasVersion) session else session.set("version", session("firstVersion").as[String])
+    })
+    .exec(http("Load TopMed Workflow")
+      .get("/metadata/descriptorLanguageList")
+      .resources(
+        http("Get starred users")
+          .get("/workflows/${id}/starredUsers")
+          .check(status is 200),
+        http("Get NFL files")
+          .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/NFL/files")
+          .check(status in(200, 404)),
+        http("Get CWL files")
+          .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/CWL/files")
+          .check(status in(200, 404)),
+        http("Get WDL files")
+          .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/WDL/files")
+          .check(status in(200, 404))
+      ))
+    .doIfEquals("${descriptorType}", "wdl") {
+      exec(http("Get secondaryWdl to check imports")
+        .get("/workflows/${id}/secondaryWdl?tag=${version}")
+      )
     }
 
 
