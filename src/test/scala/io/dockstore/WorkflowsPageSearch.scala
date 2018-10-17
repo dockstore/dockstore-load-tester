@@ -1,7 +1,5 @@
 package io.dockstore
 
-import java.net.URLEncoder
-
 import io.gatling.commons.util.TypeHelper
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
@@ -19,7 +17,7 @@ object WorkflowsPageSearch {
     .queryParam("sortOrder", "desc")
     .check(status is 200))
     .pause(1)
-    .exec(http("Search for TopMed")
+    .exec(http("Workflows search for term")
       .get("/workflows/published")
       .queryParam("offset", 0)
       .queryParam("limit", 10)
@@ -28,8 +26,8 @@ object WorkflowsPageSearch {
       .queryParam("sortOrder", "desc")
       .check(status is 200)
       .check(jsonPath("$[*].id").findRandom.saveAs("id"))
-      .check(jsonPath("$[?(@.id == ${id})].full_workflow_path").transform(path => URLEncoder.encode(path)).saveAs("repo"))
-      .check(jsonPath("$[?(@.id == ${id})].full_workflow_path").transform(path => URLEncoder.encode("#/workflow/" + path)).saveAs("fullWorkflowPath"))
+      .check(jsonPath("$[?(@.id == ${id})].full_workflow_path").transform(path => Utils.encode(path)).saveAs("repo"))
+      .check(jsonPath("$[?(@.id == ${id})].full_workflow_path").transform(path => Utils.encodeWorkflow(path)).saveAs("fullWorkflowPath"))
       .check(jsonPath("$[?(@.id == ${id})].descriptorType").saveAs("descriptorType"))
     )
     .pause(5)
@@ -37,6 +35,7 @@ object WorkflowsPageSearch {
       .get("/workflows/path/workflow/${repo}/published")
       .check(jsonPath("$.defaultVersion").saveAs("version"))
       .check(jsonPath("$.workflowVersions[0].name").saveAs("firstVersion"))
+      .check(status is 200)
     )
     .exec(session => {
       // Sometimes default version is not set; grab the first version in that case.
@@ -51,13 +50,13 @@ object WorkflowsPageSearch {
           .check(status is 200),
         http("Get NFL files")
           .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/NFL/files")
-          .check(status in(200, 404)),
+          .check(status in(200, 204)),
         http("Get CWL files")
           .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/CWL/files")
-          .check(status in(200, 404)),
+          .check(status in(200, 204)),
         http("Get WDL files")
           .get("/api/ga4gh/v2/tools/${fullWorkflowPath}/versions/${version}/WDL/files")
-          .check(status in(200, 404))
+          .check(status in(200, 204))
       ))
     .doIfEquals("${descriptorType}", "wdl") {
       exec(http("Get secondaryWdl to check imports")
