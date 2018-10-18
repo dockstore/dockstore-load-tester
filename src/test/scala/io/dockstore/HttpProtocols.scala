@@ -10,13 +10,10 @@ object HttpProtocols {
   val localhostHttpProtocol = baseHttpProtocol
     .baseUrl("http://localhost:8080")
 
-  val alphaHttpProtocol = baseHttpProtocol
-    .baseUrl("https://dockstore.org")
-
   val stagingHttpProtocol = baseHttpProtocol
     .baseUrl("https://staging.dockstore.org")
 
-  val productionHttpProtocol = baseHttpProtocol
+  val alphaHttpProtocol = baseHttpProtocol
     .baseUrl("https://alpha.dockstore.org")
 
 }
