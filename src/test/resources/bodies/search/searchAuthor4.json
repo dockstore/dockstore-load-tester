@@ -1,0 +1,303 @@
+{
+  "size": 201,
+  "_source": false,
+  "query": {
+    "match_all": {}
+  },
+  "aggs": {
+    "_type": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "_type": {
+          "terms": {
+            "field": "_type",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "descriptorType": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "descriptorType": {
+          "terms": {
+            "field": "descriptorType",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "registry": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "registry": {
+          "terms": {
+            "field": "registry",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "source_control_provider.keyword": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "source_control_provider.keyword": {
+          "terms": {
+            "field": "source_control_provider.keyword",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "input_file_formats.value.keyword": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "input_file_formats.value.keyword": {
+          "terms": {
+            "field": "input_file_formats.value.keyword",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "output_file_formats.value.keyword": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "output_file_formats.value.keyword": {
+          "terms": {
+            "field": "output_file_formats.value.keyword",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "private_access": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "private_access": {
+          "terms": {
+            "field": "private_access",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "tags.verified": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "tags.verified": {
+          "terms": {
+            "field": "tags.verified",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "author": {
+      "filter": {
+        "bool": {
+          "must_not": [
+            {
+              "term": {
+                "some garbage term that hopefully never gets matched": "${author}"
+              }
+            }
+          ]
+        }
+      },
+      "aggs": {
+        "author": {
+          "terms": {
+            "field": "author",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "namespace": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "namespace": {
+          "terms": {
+            "field": "namespace",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "labels.value.keyword": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "labels.value.keyword": {
+          "terms": {
+            "field": "labels.value.keyword",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "tags.verifiedSource": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "tags.verifiedSource": {
+          "terms": {
+            "field": "tags.verifiedSource",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "workflowVersions.verifiedSource.keyword": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "workflowVersions.verifiedSource.keyword": {
+          "terms": {
+            "field": "workflowVersions.verifiedSource.keyword",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "is_checker": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "is_checker": {
+          "terms": {
+            "field": "is_checker",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "has_checker": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "has_checker": {
+          "terms": {
+            "field": "has_checker",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    },
+    "organization": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "aggs": {
+        "organization": {
+          "terms": {
+            "field": "organization",
+            "size": 10000,
+            "order": {
+              "_count": "desc"
+            }
+          }
+        }
+      }
+    }
+  }
+}

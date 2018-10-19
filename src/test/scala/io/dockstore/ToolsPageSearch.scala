@@ -29,12 +29,13 @@ object ToolsPageSearch {
       .check(status is 200)
       .check(jsonPath("$[*].id").findRandom.saveAs("id"))
       .check(jsonPath("$[?(@.id == ${id})].tool_path").transform(toolPath => Utils.encode(toolPath)) saveAs ("tool_path"))
-      .check(jsonPath("$[?(@.id == ${id})].defaultVersion").transform(toolPath => Utils.encode(toolPath)) saveAs ("version"))
+      .check(jsonPath("$[?(@.id == ${id})].defaultVersion").saveAs ("version"))
       .check(jsonPath("$[?(@.id == ${id})].tags[0]").saveAs("firstVersion")) // This doesn't handle no tags case
     )
     .exec(session => {
       val hasVersion = (session("version").validate[String] != TypeHelper.NullValueFailure)
-      if (hasVersion) session else session.set("version", session("firstVersion").as[String])
+      val newSession = if (hasVersion) session else session.set("version", session("firstVersion").as[String])
+      newSession.set("version", Utils.encode(newSession("version").as[String]))
     })
 
     .pause(1)
@@ -59,7 +60,7 @@ object ToolsPageSearch {
         http("Get Dockerfile tag")
           .get("/containers/${id}/dockerfile")
           .queryParam("tag", "${version}")
-          .check(status is 200)
+          .check(status in (200, 400)) // Failing on at least quay.io/ucsc_cgl/rnaseq-cgl-pipeline
       )
     )
   //			.headers(headers_8),

@@ -9,7 +9,7 @@ object CreateAndUpdateHostedWorkflow {
 
   private val workflowNameFeeder = Iterator.continually(Map("workflowName" -> randomUUID().toString))
 
-  def create() =
+  def create =
     feed(workflowNameFeeder).exec(http("Create Hosted Workflow")
       .post("/workflows/hostedEntry")
       .queryParam("name", "${workflowName}")
@@ -20,11 +20,11 @@ object CreateAndUpdateHostedWorkflow {
       .exec(http("Add file to Hosted Workflow")
         .patch("/workflows/hostedEntry/${id}")
         .headers(Map("Authorization" -> "Bearer ${token}", "Content-type" -> "application/json"))
-        .body(RawFileBody("bodies/CreateHostedWdl.txt"))
+        .body(RawFileBody("bodies/hosted/CreateHostedWdl.json"))
         .check(status is 200))
       .exec(http("Save new revision of Hosted Workflow")
         .patch("/workflows/hostedEntry/${id}")
         .headers(Map("Authorization" -> "Bearer ${token}", "Content-type" -> "application/json"))
-        .body(RawFileBody("bodies/UpdateHostedWdl.txt"))
+        .body(RawFileBody("bodies/hosted/UpdateHostedWdl.json"))
         .check(status is 200))
 }

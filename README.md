@@ -40,6 +40,11 @@ token
 mvn clean test-compile gatling:test
 ```
 
+## Tips
+
+Figuring JSON path can be tricky. I find [this site](http://jsonpath.herokuapp.com/) useful in interactively figuring out the
+expression.
+
 ## Todo
 
 1. Token thing should be automated.
@@ -51,4 +56,6 @@ mvn clean test-compile gatling:test
    1. For simulating web users, I assume the caching is done
 on a per-user basis, which is what we would want, as the browser would cache requests based on headers. Need to verify.
    2. For simulating API calls, we probably want to disable caching, as HTTP client libraries don't do that, AFAIK.
+7. SearchPage only searches author; only searches one term
+8. Investigate using something like https://github.com/nuxeo/gatling-report to compare results
 

@@ -16,13 +16,21 @@ class DockstoreSimulation extends Simulation {
   val toolsAndWorkflowsSearches = scenario("Tools and Workflows List, Search, and Go to item").exec(ToolsPageSearch.search, WorkflowsPageSearch.search)
   val searchPage = scenario("Search Page").exec(SearchPage.search)
 
+  val everything = scenario("Everything").feed(tokenFeeder).exec(HomePage.open,
+    ToolsPageSearch.search,
+    WorkflowsPageSearch.search,
+    SearchPage.search,
+    CreateAndUpdateHostedWorkflow.create)
+
 //  val theScenario = toolsAndWorkflowsSearches
 //  val theScenario = toolsPageSearch
 //  val  theScenario = searchPage
 
-  val theScenario = createAndUpdateHostedWorkflow
+//  val theScenario = createAndUpdateHostedWorkflow
+
+  val theScenario = everything
 
   setUp(theScenario.inject(atOnceUsers(6))).protocols(HttpProtocols.localhostHttpProtocol)
-//  setUp(scn.inject(atOnceUsers(5))).protocols(HttpProtocols.localhostHttpProtocol)
-  //  setUp(scn.inject(rampUsers(20) during(30 seconds))).protocols(HttpProtocols.localhostHttpProtocol)
+//  setUp(theScenario.inject(atOnceUsers(5))).protocols(HttpProtocols.localhostHttpProtocol)
+//    setUp(theScenario.inject(rampUsers(20) during(5 minutes))).protocols(HttpProtocols.localhostHttpProtocol)
 }

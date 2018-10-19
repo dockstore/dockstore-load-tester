@@ -1,0 +1,31 @@
+{
+  "size": 201,
+  "_source": {
+    "excludes": [
+      "*.content",
+      "*.sourceFiles",
+      "description",
+      "users",
+      "workflowVersions.dirtyBit",
+      "workflowVersions.hidden",
+      "workflowVersions.last_modified",
+      "workflowVersions.name",
+      "workflowVersions.valid",
+      "workflowVersions.workflow_path",
+      "workflowVersions.workingDirectory",
+      "workflowVersions.reference"
+    ]
+  },
+  "query": {
+    "bool": {
+      "filter": {
+        "term": {
+          "author": "${author}"
+        }
+      },
+      "must": {
+        "match_all": {}
+      }
+    }
+  }
+}
