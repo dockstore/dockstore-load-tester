@@ -42,12 +42,12 @@ mvn clean test-compile gatling:test
 
 ## Tips
 
-Figuring JSON path can be tricky. I find [this site](http://jsonpath.herokuapp.com/) useful in interactively figuring out the
+Figuring JSON paths can be tricky. I find [this site](http://jsonpath.herokuapp.com/) useful in interactively figuring out the
 expression.
 
 ## Todo
 
-1. Token thing should be automated.
+1. Setting up tokens is too manual
 2. The scenario that gets run should be configurable.
 3. The endpoint of the backend API should be configurable.
 4. The number of users and when/how they get injected should be configurable.
@@ -58,4 +58,5 @@ on a per-user basis, which is what we would want, as the browser would cache req
    2. For simulating API calls, we probably want to disable caching, as HTTP client libraries don't do that, AFAIK.
 7. SearchPage only searches author; only searches one term
 8. Investigate using something like https://github.com/nuxeo/gatling-report to compare results
+9. Doesn't test integration with external repos, e.g., refreshing from GitHub
 

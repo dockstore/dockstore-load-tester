@@ -1,0 +1,9 @@
+[
+  {
+    "content": "\"#!\/usr\/bin\/env cwl-runner\r\n#A comment\r\n\r\ncwlVersion: v1.0\r\nclass: CommandLineTool\r\nbaseCommand: echo\r\ninputs:\r\n  message:\r\n    type: string\r\n    inputBinding:\r\n      position: 1\r\noutputs: []\"",
+    "id": 3463052,
+    "path": "/Dockstore.cwl",
+    "type": "DOCKSTORE_CWL",
+    "verifiedBySource": {}
+  }
+]

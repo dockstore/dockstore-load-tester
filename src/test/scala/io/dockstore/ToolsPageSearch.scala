@@ -4,6 +4,16 @@ import io.gatling.commons.util.TypeHelper
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
+/**
+  * Makes the API calls of a user going to Tools page by
+  *
+  * <ol>
+  *   <li>Getting the list of tools
+  *   <li>Searching for a pseudo-random set of tools (terms searched for are in data/toolSearchTerms.csv)
+  *   <li>Drilling into a random tool from the queried tools from the previous step
+  * </ol>
+  */
+
 object ToolsPageSearch {
 
   private val searchTermFeeder = csv("data/toolSearchTerms.csv").random
@@ -19,6 +29,7 @@ object ToolsPageSearch {
         .queryParam("sortCol", "stars")
         .queryParam("sortOrder", "desc")))
     .pause(13)
+
     .exec(http("Tools search for term")
       .get("/containers/published")
       .queryParam("offset", "0")
@@ -32,14 +43,15 @@ object ToolsPageSearch {
       .check(jsonPath("$[?(@.id == ${id})].defaultVersion").saveAs ("version"))
       .check(jsonPath("$[?(@.id == ${id})].tags[0]").saveAs("firstVersion")) // This doesn't handle no tags case
     )
+    .pause(1)
+
     .exec(session => {
       val hasVersion = (session("version").validate[String] != TypeHelper.NullValueFailure)
       val newSession = if (hasVersion) session else session.set("version", session("firstVersion").as[String])
       newSession.set("version", Utils.encode(newSession("version").as[String]))
     })
 
-    .pause(1)
-    .exec(http("Get tool")
+    .exec(http("Get random tool")
       .get("/containers/path/tool/${tool_path}/published")
       .check(status is 200)
       .resources(http(" Get Descriptor Language List")
@@ -63,14 +75,4 @@ object ToolsPageSearch {
           .check(status in (200, 400)) // Failing on at least quay.io/ucsc_cgl/rnaseq-cgl-pipeline
       )
     )
-  //			.headers(headers_8),
-  //            http("request_50")
-  //			.options("/api/ga4gh/v2/tools/quay.io%2Fwtsicgp%2Fdockstore-cgpwgs/versions/1.1.4/cwl/descriptor/Dockstore.cwl")
-  //			.headers(headers_8),
-  //            http("request_51")
-  //			.get("/api/ga4gh/v2/tools/quay.io%2Fwtsicgp%2Fdockstore-cgpwgs/versions/1.1.4/cwl/descriptor/Dockstore.cwl")
-  //			.headers(headers_18),
-  //            http("request_52")
-  //			.get("/api/ga4gh/v2/tools/quay.io%2Fwtsicgp%2Fdockstore-cgpwgs/versions/1.1.4/cwl/descriptor/examples%2Fanalysis_config.local.json")
-  //
 }

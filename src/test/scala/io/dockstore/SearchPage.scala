@@ -6,6 +6,15 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import io.gatling.jdbc.Predef._
 
+/**
+  * Makes the API calls of a user going to the search page.
+  *
+  * <ol>
+  *   <li>Gets the aggregations
+  *   <li>Selects a random author
+  *   <li>Queries for the random author
+  * </ol>
+  */
 object SearchPage  {
 
   private val searchPath = "/api/ga4gh/v2/extended/tools/entry/_search"

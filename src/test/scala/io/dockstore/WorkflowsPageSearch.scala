@@ -4,6 +4,15 @@ import io.gatling.commons.util.TypeHelper
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
+/**
+  * Makes API calls of user going to workflows page by:
+  *
+  * <ol>
+  *   <li>Getting the list of workflows
+  *   <li>Searching for a pseudo-random set of workflows (terms searched for are in data/workflowSearchTerms.csv)
+  *   <li>Drilling into a random workflow from the queried workflows from the previous step
+  * </ol>
+  */
 object WorkflowsPageSearch {
 
   private val searchTermFeeder = csv("data/workflowSearchTerms.csv").random
@@ -31,18 +40,21 @@ object WorkflowsPageSearch {
       .check(jsonPath("$[?(@.id == ${id})].descriptorType").saveAs("descriptorType"))
     )
     .pause(5)
+
     .exec(http("Published Worfklow")
       .get("/workflows/path/workflow/${repo}/published")
       .check(jsonPath("$.defaultVersion").saveAs("version"))
       .check(jsonPath("$.workflowVersions[0].name").saveAs("firstVersion"))
       .check(status is 200)
     )
+
     .exec(session => {
       // Sometimes default version is not set; grab the first version in that case.
       val hasVersion = (session("version").validate[String] != TypeHelper.NullValueFailure)
       if (hasVersion) session else session.set("version", session("firstVersion").as[String])
     })
-    .exec(http("Load TopMed Workflow")
+
+    .exec(http("Load Random Workflow")
       .get("/metadata/descriptorLanguageList")
       .resources(
         http("Get starred users")
@@ -63,30 +75,4 @@ object WorkflowsPageSearch {
         .get("/workflows/${id}/secondaryWdl?tag=${version}")
       )
     }
-
-
-  //    .exec(http("request_6")
-  //      .get("/metadata/descriptorLanguageList")
-  //      .headers(headers_0)
-  //      .resources(http("request_7")
-  //        http("request_11")
-  //          .get("/workflows/5851/wdl?tag=1.17.0")
-  //          .headers(headers_0),
-  //        http("request_12")
-  //          .get("/api/ga4gh/v2/tools/%23workflow%2Fgithub.com%2FDataBiosphere%2Ftopmed-workflows%2FTopMed_Variant_Caller_wdl_checker/versions/1.17.0/WDL/files")
-  //          .headers(headers_0),
-  //        http("request_13")
-  //          .get("/api/ga4gh/v2/tools/%23workflow%2Fgithub.com%2FDataBiosphere%2Ftopmed-workflows%2FTopMed_Variant_Caller_wdl_checker/versions/1.17.0/wdl/descriptor/topmed_freeze3_calling_checker.json")
-  //          .headers(headers_0),
-  //        http("request_14")
-  //          .get("/workflows/5851/secondaryWdl?tag=1.17.0")
-  //          .headers(headers_0),
-  //        http("request_15")
-  //          .get("/api/ga4gh/v2/tools/%23workflow%2Fgithub.com%2FDataBiosphere%2Ftopmed-workflows%2FTopMed_Variant_Caller_wdl_checker/versions/1.17.0/wdl/descriptor/topmed_freeze3_calling_checker.wdl")
-  //          .headers(headers_0),
-  //        http("request_16")
-  //          .get("/workflows/5851/tools/14657")
-  //          .headers(headers_0)
-  //          .check(status.is(500))))
-
 }
