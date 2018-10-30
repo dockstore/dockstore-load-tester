@@ -19,24 +19,13 @@ object ToolsPageSearch {
   private val searchTermFeeder = csv("data/toolSearchTerms.csv").random
 
   val search = feed(searchTermFeeder)
-    .exec(http("Get metatdata and published containers")
-      .get("/api/ga4gh/v2/metadata")
-      .resources(http("Get first 10 published containers")
-        .get("/containers/published")
-        .queryParam("offset", "0")
-        .queryParam("limit", 10)
-        .queryParam("filter", "")
-        .queryParam("sortCol", "stars")
-        .queryParam("sortOrder", "desc")))
+    .exec(
+      Requests.getMetadata
+      .resources(Requests.getPublishedContainers()))
     .pause(13)
 
-    .exec(http("Tools search for term")
-      .get("/containers/published")
-      .queryParam("offset", "0")
-      .queryParam("limit", 10)
-      .queryParam("filter", "${term}")
-      .queryParam("sortCol", "stars")
-      .queryParam("sortOrder", "desc")
+    .exec(
+      Requests.getPublishedContainers("${term}")
       .check(status is 200)
       .check(jsonPath("$[*].id").findRandom.saveAs("id"))
       .check(jsonPath("$[?(@.id == ${id})].tool_path").transform(toolPath => Utils.encode(toolPath)) saveAs ("tool_path"))
@@ -51,28 +40,22 @@ object ToolsPageSearch {
       newSession.set("version", Utils.encode(newSession("version").as[String]))
     })
 
-    .exec(http("Get random tool")
-      .get("/containers/path/tool/${tool_path}/published")
+    .exec(
+      Requests.getPublishedTool("${tool_path}")
       .check(status is 200)
-      .resources(http(" Get Descriptor Language List")
-        .get("/metadata/descriptorLanguageList")
+      .resources(Requests.getDescriptorLanguageList
         .check(status is 200),
-        http("Get NFL files")
-          .get("/api/ga4gh/v2/tools/${tool_path}/versions/${version}/NFL/files")
+        Requests.getNflFiles("${tool_path}", "${version}")
           .check(status in(200, 204)),
-        http("Get WDL files")
-          .get("/api/ga4gh/v2/tools/${tool_path}/versions/${version}/WDL/files")
+        Requests.getWdlFiles("${tool_path}", "${version}")
           .check(status in(200, 204)),
-        http("Get CWL files")
-          .get("/api/ga4gh/v2/tools/${tool_path}/versions/${version}/CWL/files")
+        Requests.getCwlFiles("${tool_path}", "${version}")
           .check(status in(200, 204)),
-        http("Get Container Starred Users")
-          .get("/containers/${id}/starredUsers")
+        Requests.getContainerStarredUsers("${id}")
           .check(status is 200),
-        http("Get Dockerfile tag")
-          .get("/containers/${id}/dockerfile")
-          .queryParam("tag", "${version}")
+        Requests.getDockerfileByTag("${id}", "${version}")
           .check(status in (200, 400)) // Failing on at least quay.io/ucsc_cgl/rnaseq-cgl-pipeline
       )
     )
+
 }
