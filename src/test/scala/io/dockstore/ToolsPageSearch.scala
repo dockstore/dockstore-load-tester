@@ -41,7 +41,7 @@ object ToolsPageSearch {
     })
 
     .exec(
-      Requests.getPublishedTool("${tool_path}")
+      Requests.getPublishedContainer("${tool_path}")
       .check(status is 200)
       .resources(Requests.getDescriptorLanguageList
         .check(status is 200),

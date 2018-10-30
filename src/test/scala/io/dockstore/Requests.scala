@@ -5,7 +5,7 @@ import io.gatling.http.Predef._
 
 object Requests {
 
-  def authHeader(token: String) = {
+  private def authHeader(token: String) = {
     Map("Authorization" -> s"Bearer ${token}")
   }
 
@@ -47,20 +47,40 @@ object Requests {
       .queryParam("sortOrder", "desc")
   }
 
-  def getPublishedTool(toolPath: String) = {
+  def getPublishedContainer(toolPath: String) = {
     http("Get Published Tool")
       .get(s"/containers/path/tool/${toolPath}/published")
+  }
+
+  def getContainerStarredUsers(containerId: String) = {
+    http("Get Container Starred Users")
+      .get(s"/containers/${containerId}/starredUsers")
+  }
+
+  def getPublishedWorkflows(filter: String = "") = {
+    http("Get first 10 published workflows")
+      .get("/workflows/published")
+      .queryParam("offset", 0)
+      .queryParam("limit", 10)
+      .queryParam("filter", filter)
+      .queryParam("sortCol", "stars")
+      .queryParam("sortOrder", "desc")
+  }
+
+  def getPublishedWorkflow(repo: String) = {
+    http("Published Worfklow")
+      .get(s"/workflows/path/workflow/${repo}/published")
+  }
+
+  def getWorkflowStarredUsers(workflowId: String) = {
+    http("Get Workflow Starred Users")
+      .get(s"/workflows/${workflowId}/starredUsers")
   }
 
   def getDescriptorLanguageList = {
     http(" Get Descriptor Language List")
       .get("/metadata/descriptorLanguageList")
   }
-
-  def getContainerStarredUsers(containerId: String) = {
-   http("Get Container Starred Users")
-     .get(s"/containers/${containerId}/starredUsers")
- }
 
   def getDockerfileByTag(id: String, tag: String) = {
    http("Get Dockerfile tag")
@@ -82,4 +102,11 @@ object Requests {
     http("Get NFL files")
       .get(s"/api/ga4gh/v2/tools/${toolPath}/versions/${version}/NFL/files")
   }
+
+  def getSecondaryWdl(workflowId: String, version: String) = {
+    http("Get secondary wdl")
+      .get(s"/workflows/${workflowId}/secondaryWdl?tag=${version}")
+
+  }
+
 }
