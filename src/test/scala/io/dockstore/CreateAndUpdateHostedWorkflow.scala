@@ -18,23 +18,14 @@ object CreateAndUpdateHostedWorkflow {
 
   def create =
     feed(workflowNameFeeder)
-      .exec(http("Create Hosted Workflow")
-        .post("/workflows/hostedEntry")
-        .queryParam("name", "${workflowName}")
-        .queryParam("descriptorType", "wdl")
-        .header("Authorization", "Bearer ${token}")
+      .exec(Requests.createHostedWorkflow("${workflowName}", "${token}")
         .check(status in(200, 201)) // Should be 201, but https://github.com/ga4gh/dockstore/issues/1859
         .check(jsonPath("$.id").saveAs("id")))
 
-      .exec(http("Add file to Hosted Workflow")
-        .patch("/workflows/hostedEntry/${id}")
-        .headers(Map("Authorization" -> "Bearer ${token}", "Content-type" -> "application/json"))
-        .body(RawFileBody("bodies/hosted/CreateHostedWdlWorkflow.json"))
+      .exec(Requests.addFileToHostedWorkflow("${id}", "${token}", "bodies/hosted/CreateHostedWdlWorkflow.json")
         .check(status is 200))
 
-      .exec(http("Save new revision of Hosted Workflow")
-        .patch("/workflows/hostedEntry/${id}")
-        .headers(Map("Authorization" -> "Bearer ${token}", "Content-type" -> "application/json"))
-        .body(RawFileBody("bodies/hosted/UpdateHostedWdlWorkflow.json"))
+      // Save another revision
+      .exec(Requests.addFileToHostedWorkflow("${id}", "${token}", "bodies/hosted/UpdateHostedWdlWorkflow.json")
         .check(status is 200))
 }

@@ -109,4 +109,19 @@ object Requests {
 
   }
 
+  def createHostedWorkflow(workflowName: String, token: String) = {
+    http("Create Hosted Workflow")
+      .post("/workflows/hostedEntry")
+      .queryParam("name", s"${workflowName}")
+      .queryParam("descriptorType", "wdl")
+      .headers(authHeader(token))
+  }
+
+  def addFileToHostedWorkflow(id: String, token: String, filename: String) = {
+    http("Add file to Hosted Workflow")
+      .patch(s"/workflows/hostedEntry/${id}")
+      .headers(authHeader(token))
+      .headers(Map("Content-type" -> "application/json"))
+      .body(RawFileBody(filename))
+  }
 }

@@ -13,17 +13,12 @@ import io.gatling.jdbc.Predef._
   */
 object HomePage {
 
-  val open = exec(http("Home Page MetaData")
-    .get("/api/ga4gh/v2/metadata")
+  val open = exec(
+    Requests.getMetadata
     .check(status is 200))
 
-    .exec(http("Home Page Tools")
-      .get("/containers/published")
-      .queryParam("offset", 0)
-      .queryParam("limit", 10)
-      .queryParam("filter", "")
-      .queryParam("sortCol", "stars")
-      .queryParam("sortOrder", "desc")
+    .exec(
+      Requests.getPublishedContainers()
       .check(status is 200)
     )
 }
