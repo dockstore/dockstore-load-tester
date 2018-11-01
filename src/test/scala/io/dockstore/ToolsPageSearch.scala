@@ -1,5 +1,6 @@
 package io.dockstore
 
+import io.dockstore.Requests.{Container, Ga4gh2, MetaData}
 import io.gatling.commons.util.TypeHelper
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
@@ -20,12 +21,12 @@ object ToolsPageSearch {
 
   val search = feed(searchTermFeeder)
     .exec(
-      Requests.getMetadata
-      .resources(Requests.getPublishedContainers()))
+      Ga4gh2.getMetadata
+      .resources(Container.getPublishedContainers()))
     .pause(13)
 
     .exec(
-      Requests.getPublishedContainers("${term}")
+      Container.getPublishedContainers("${term}")
       .check(status is 200)
       .check(jsonPath("$[*].id").findRandom.saveAs("id"))
       .check(jsonPath("$[?(@.id == ${id})].tool_path").transform(toolPath => Utils.encode(toolPath)) saveAs ("tool_path"))
@@ -41,19 +42,19 @@ object ToolsPageSearch {
     })
 
     .exec(
-      Requests.getPublishedContainer("${tool_path}")
+      Container.getPublishedContainer("${tool_path}")
       .check(status is 200)
-      .resources(Requests.getDescriptorLanguageList
+      .resources(MetaData.getDescriptorLanguageList
         .check(status is 200),
-        Requests.getNflFiles("${tool_path}", "${version}")
+        Ga4gh2.getNflFiles("${tool_path}", "${version}")
           .check(status in(200, 204)),
-        Requests.getWdlFiles("${tool_path}", "${version}")
+        Ga4gh2.getWdlFiles("${tool_path}", "${version}")
           .check(status in(200, 204)),
-        Requests.getCwlFiles("${tool_path}", "${version}")
+        Ga4gh2.getCwlFiles("${tool_path}", "${version}")
           .check(status in(200, 204)),
-        Requests.getContainerStarredUsers("${id}")
+        Container.getContainerStarredUsers("${id}")
           .check(status is 200),
-        Requests.getDockerfileByTag("${id}", "${version}")
+        Container.getDockerfileByTag("${id}", "${version}")
           .check(status in (200, 400)) // Failing on at least quay.io/ucsc_cgl/rnaseq-cgl-pipeline
       )
     )

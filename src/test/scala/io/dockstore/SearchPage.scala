@@ -1,7 +1,8 @@
 package io.dockstore
 
-import scala.concurrent.duration._
+import io.dockstore.Requests.Ga4gh2
 
+import scala.concurrent.duration._
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import io.gatling.jdbc.Predef._
@@ -20,7 +21,7 @@ object SearchPage  {
   private val searchPath = "/api/ga4gh/v2/extended/tools/entry/_search"
 
   val search = exec(
-			Requests.getMetadata
+			Ga4gh2.getMetadata
 				.check(status is 200)
 		)
     .exec(

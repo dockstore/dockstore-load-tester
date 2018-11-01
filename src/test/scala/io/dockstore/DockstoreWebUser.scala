@@ -31,9 +31,12 @@ class DockstoreWebUser extends Simulation {
 
   val fetchHostedWorkflows = scenario("Fetch hosted workflows and tools").feed(tokenFeeder).exec(HostedWorkflows.fetchRandomAndTogglePublish)
 
+  val accountsPage = scenario("Visit Accounts Page").feed(tokenFeeder).exec(Accounts.accountsPage)
+
 
   val everything = scenario("Everything").feed(tokenFeeder).exec(
     HomePage.open,
+    Accounts.accountsPage,
     ToolsPageSearch.search,
     WorkflowsPageSearch.search,
     SearchPage.search,
@@ -48,6 +51,10 @@ class DockstoreWebUser extends Simulation {
 //  val theScenario = createAndUpdateHostedWorkflow
 //  val theScenario = createAndUpdateHostedTool
 //  val theScenario = fetchHostedWorkflows
+
+//  val theScenario = accountsPage
+
+//  val theScenario = workflowsPageSearch
 
   val theScenario = everything
 

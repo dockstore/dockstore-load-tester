@@ -2,8 +2,9 @@ package io.dockstore
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-
 import java.util.UUID.randomUUID
+
+import io.dockstore.Requests.Container
 
 /**
   * This needs more work -- need to figure out registry
@@ -19,24 +20,15 @@ object CreateAndUpdateHostedTool {
 
   def create =
     feed(toolNameFeeder)
-      .exec(http("Create Hosted Tool")
-        .post("/containers/hostedEntry")
-          .queryParam("registry", "quay.io")
-        .queryParam("name", "${toolName}")
-        .queryParam("descriptorType", "cwl")
-        .header("Authorization", "Bearer ${token}")
-        .check(status in(200, 201)) // Should be 201, but https://github.com/ga4gh/dockstore/issues/1859
+      .exec(Container.createHostedTool("${toolName}", "${token}", "cwl")
         .check(jsonPath("$.id").saveAs("id")))
 
-      .exec(http("Add file to Hosted Tool")
-        .patch("/containers/hostedEntry/${id}")
-        .headers(Map("Authorization" -> "Bearer ${token}", "Content-type" -> "application/json"))
-        .body(RawFileBody("bodies/hosted/CreateHostedCwlTool.json"))
+      .exec(
+        Container.addFileToHostedTool("${id}", "${token}", "bodies/hosted/CreateHostedCwlTool.json")
         .check(status is 200))
 
-      .exec(http("Save new revision of Hosted Tool")
-        .patch("/containers/hostedEntry/${id}")
-        .headers(Map("Authorization" -> "Bearer ${token}", "Content-type" -> "application/json"))
-        .body(RawFileBody("bodies/hosted/UpdateHostedCwlTool.json"))
+      .exec(
+        Container.addFileToHostedTool("${id}", "${token}", "bodies/hosted/UpdateHostedCwlTool.json")
         .check(status is 200))
+
 }

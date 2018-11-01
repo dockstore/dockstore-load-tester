@@ -1,5 +1,6 @@
 package io.dockstore
 
+import io.dockstore.Requests.{Container, Ga4gh2}
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import io.gatling.jdbc.Predef._
@@ -14,11 +15,11 @@ import io.gatling.jdbc.Predef._
 object HomePage {
 
   val open = exec(
-    Requests.getMetadata
+    Ga4gh2.getMetadata
     .check(status is 200))
 
     .exec(
-      Requests.getPublishedContainers()
+      Container.getPublishedContainers()
       .check(status is 200)
     )
 }

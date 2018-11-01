@@ -1,5 +1,6 @@
 package io.dockstore
 
+import io.dockstore.Requests.{Ga4gh2, MetaData, Workflow}
 import io.gatling.commons.util.TypeHelper
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
@@ -11,6 +12,7 @@ import io.gatling.http.Predef._
   * <li>Getting the list of workflows
   * <li>Searching for a pseudo-random set of workflows (terms searched for are in data/workflowSearchTerms.csv)
   * <li>Drilling into a random workflow from the queried workflows from the previous step
+  * <li>Download the workflow as a zip
   * </ol>
   */
 object WorkflowsPageSearch {
@@ -18,11 +20,11 @@ object WorkflowsPageSearch {
   private val searchTermFeeder = csv("data/workflowSearchTerms.csv").random
 
   val search = feed(searchTermFeeder).exec(
-    Requests.getPublishedWorkflows()
+    Workflow.getPublishedWorkflows()
       .check(status is 200))
     .pause(1)
     .exec(
-      Requests.getPublishedWorkflows("${term}")
+      Workflow.getPublishedWorkflows("${term}")
         .check(status is 200)
         .check(jsonPath("$[*].id").findRandom.saveAs("id"))
         .check(jsonPath("$[?(@.id == ${id})].full_workflow_path").transform(path => Utils.encode(path)).saveAs("repo"))
@@ -32,9 +34,10 @@ object WorkflowsPageSearch {
     .pause(5)
 
     .exec(
-      Requests.getPublishedWorkflow("${repo}")
+      Workflow.getPublishedWorkflow("${repo}")
         .check(jsonPath("$.defaultVersion").saveAs("version"))
         .check(jsonPath("$.workflowVersions[0].name").saveAs("firstVersion"))
+        .check(jsonPath("$.workflowVersions[0].id").saveAs("versionId"))
         .check(status is 200)
     )
 
@@ -45,20 +48,25 @@ object WorkflowsPageSearch {
     })
 
     .exec(
-      Requests.getDescriptorLanguageList
+      MetaData.getDescriptorLanguageList
         .resources(
-          Requests.getWorkflowStarredUsers("${id}")
+          Workflow.getWorkflowStarredUsers("${id}")
             .check(status is 200),
-          Requests.getNflFiles("${fullWorkflowPath}", "${version}")
+          Ga4gh2.getNflFiles("${fullWorkflowPath}", "${version}")
             .check(status in(200, 204)),
-          Requests.getCwlFiles("${fullWorkflowPath}", "${version}")
+          Ga4gh2.getCwlFiles("${fullWorkflowPath}", "${version}")
             .check(status in(200, 204)),
-          Requests.getWdlFiles("${fullWorkflowPath}", "${version}")
+          Ga4gh2.getWdlFiles("${fullWorkflowPath}", "${version}")
             .check(status in(200, 204))
         ))
     .doIfEquals("${descriptorType}", "wdl") {
       exec(
-        Requests.getSecondaryWdl("${id}", "${version}")
+        Workflow.getSecondaryWdl("${id}", "${version}")
       )
     }
+
+    .exec(
+      Workflow.downloadWorkflowAsZip("${id}", "${versionId}")
+        .check(status in (200, 204)) // Some versions have no source files
+    )
 }
