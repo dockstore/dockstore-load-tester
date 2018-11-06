@@ -1,6 +1,8 @@
 package io.dockstore
 
 import io.gatling.core.Predef._
+import io.gatling.core.structure.ScenarioBuilder
+import io.gatling.http.protocol.HttpProtocolBuilder
 
 import scala.concurrent.duration._
 
@@ -8,56 +10,68 @@ import scala.concurrent.duration._
   * Simulates a Dockstore Web User
   *
   * <ol>
-  *   <li>Goes to home page</li>
-  *   <li>Goes to tools page, searches for a random tool and drills into it</li>
-  *   <li>Goes to workflows page, searches for a random workflow and drills into it</li>
-  *   <li>Goes to search page, searches for a random author</li>
-  *   <li>Creates a hosted workflow, adds a file to it, then saves another version</li>
-  *   <li>Fetches a user's workflows, then
+  * <li>Goes to home page</li>
+  * <li>Goes to tools page, searches for a random tool and drills into it</li>
+  * <li>Goes to workflows page, searches for a random workflow and drills into it</li>
+  * <li>Goes to search page, searches for a random author</li>
+  * <li>Creates a hosted workflow, adds a file to it, then saves another version</li>
+  * <li>Fetches a user's workflows, then
   * </ol>
   */
 class DockstoreWebUser extends Simulation {
 
   private val tokenFeeder = csv("data/tokens.csv").random
 
-  val createAndUpdateHostedWorkflow = scenario("Create and Update Hosted Workflow").feed(tokenFeeder).exec(CreateAndUpdateHostedWorkflow.create)
-  val createAndUpdateHostedTool = scenario("Create and Update Hosted Tool").feed(tokenFeeder).exec(CreateAndUpdateHostedTool.create)
-
-  val homePage = scenario("Home Page").exec(HomePage.open)
-  val toolsPageSearch = scenario("Tools Page Search and Navigate").exec(ToolsPageSearch.search)
-  val workflowsPageSearch = scenario("Workflows Page Search and Navigate").exec(WorkflowsPageSearch.search)
-  val toolsAndWorkflowsSearches = scenario("Tools and Workflows List, Search, and Go to item").exec(ToolsPageSearch.search, WorkflowsPageSearch.search)
-  val searchPage = scenario("Search Page").exec(SearchPage.search)
-
-  val fetchHostedWorkflows = scenario("Fetch hosted workflows and tools").feed(tokenFeeder).exec(HostedWorkflows.fetchRandomAndTogglePublish)
-
-  val accountsPage = scenario("Visit Accounts Page").feed(tokenFeeder).exec(Accounts.accountsPage)
-
-
-  val everything = scenario("Everything").feed(tokenFeeder).exec(
-    HomePage.open,
-    Accounts.accountsPage,
-    ToolsPageSearch.search,
-    WorkflowsPageSearch.search,
-    SearchPage.search,
-    CreateAndUpdateHostedWorkflow.create,
-    HostedWorkflows.fetchRandomAndTogglePublish
+  val scenarios = Array(
+    scenario("HostedWorkflowCrud").feed(tokenFeeder).exec(CreateAndUpdateHostedWorkflow.create),
+    scenario("HostedToolCrud").feed(tokenFeeder).exec(CreateAndUpdateHostedTool.create),
+    scenario("Home").exec(HomePage.open),
+    scenario("ToolsSearch").exec(ToolsPageSearch.search),
+    scenario("WorkflowsSearch").exec(WorkflowsPageSearch.search),
+    scenario("ToolsAndWorkflowsSearch").exec(ToolsPageSearch.search, WorkflowsPageSearch.search),
+    scenario("SearchPage").exec(SearchPage.search),
+    scenario("PublishRandomHostedWorkflow").feed(tokenFeeder).exec(HostedWorkflows.fetchRandomAndTogglePublish),
+    scenario("Account").feed(tokenFeeder).exec(Accounts.accountsPage),
+    scenario("MyWorkflows").feed(tokenFeeder).exec(MyWorkflows.myWorkflows),
+    scenario("Everything").feed(tokenFeeder).exec(
+      HomePage.open,
+      Accounts.accountsPage,
+      ToolsPageSearch.search,
+      WorkflowsPageSearch.search,
+      SearchPage.search,
+      CreateAndUpdateHostedWorkflow.create,
+      HostedWorkflows.fetchRandomAndTogglePublish,
+      MyWorkflows.myWorkflows
+    )
   )
 
-//  val theScenario = toolsAndWorkflowsSearches
-//  val theScenario = toolsPageSearch
-//  val  theScenario = searchPage
 
-//  val theScenario = createAndUpdateHostedWorkflow
-//  val theScenario = createAndUpdateHostedTool
-//  val theScenario = fetchHostedWorkflows
+  private def getScenario(scenarioName: String) = {
+    println("scenario is " + scenarioName)
+    val maybeBuilder: Option[ScenarioBuilder] = scenarios.find(sb => sb.name equals(scenarioName))
+    if (!maybeBuilder.isDefined) {
+      println(s"Invalid scenario name ${scenarioName}.")
+      println("Valid scenario names are: ")
+      scenarios.foreach(sb => println(s"\t${sb.name}"))
+    }
+    maybeBuilder
+  }
 
-//  val theScenario = accountsPage
+  getScenario(System.getProperty("scenario", "Everything")).map(sb => {
+    val users = Integer.getInteger("users", 20)
+    val rampMinutes = Integer.getInteger("rampMinutes", 5)
+    val baseUrl = System.getProperty("baseUrl", "http://localhost:8080")
+    val atOnce = "true".equals(System.getProperty("atOnce"))
 
-//  val theScenario = workflowsPageSearch
+    val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl)
 
-  val theScenario = everything
+    print(s"Executing for ${users} users, ")
+    if (atOnce) print("all at once, ") else println(s"over ${rampMinutes} minutes, ")
+    print(s"against ${baseUrl}.")
+    println()
 
-  setUp(theScenario.inject(atOnceUsers(2))).protocols(HttpProtocols.localhostHttpProtocol)
-//    setUp(theScenario.inject(rampUsers(30) during(10 minutes))).protocols(HttpProtocols.localhostHttpProtocol)
+    if (atOnce) setUp(sb.inject(atOnceUsers(users))).protocols(httpProtocolBuilder)
+    else setUp(sb.inject(rampUsers(users) during (rampMinutes minutes))).protocols(httpProtocolBuilder)
+  })
+
 }

@@ -99,12 +99,12 @@ object Requests {
         .get(s"/workflows/path/workflow/${repo}/published")
     }
 
-    def getWorkflowStarredUsers(workflowId: String) = {
+    def getStarredUsers(workflowId: String) = {
       http("Get Workflow Starred Users")
         .get(s"/workflows/${workflowId}/starredUsers")
     }
 
-    def getPublishedWorkflows(filter: String = "") = {
+    def getPublished(filter: String = "") = {
       http("Get first 10 published workflows")
         .get("/workflows/published")
         .queryParam("offset", 0)
@@ -133,7 +133,7 @@ object Requests {
 
     }
 
-    def createHostedWorkflow(workflowName: String, token: String, descriptorType: String) = {
+    def createHosted(workflowName: String, token: String, descriptorType: String) = {
       http("Create Hosted Workflow")
         .post("/workflows/hostedEntry")
         .queryParam("name", s"${workflowName}")
@@ -153,6 +153,24 @@ object Requests {
       http("Download Workflow Zip Bundle")
         .get(s"/workflows/${workflowId}/zip/${version}")
         .headers(Map("Accept" -> "application/zip"))
+    }
+
+    def getShared(token: String) = {
+      http("Get shared workflows")
+        .get("/workflows/shared")
+        .headers(authHeader(token))
+    }
+
+    def getTools(workflowId: String, workflowVersionId: String, token: String) = {
+      http("Get Workflow Tools")
+        .get(s"/workflows/${workflowId}/tools/${workflowVersionId}")
+        .headers(authHeader(token))
+    }
+
+    def getDag(workflowId: String, workflowVersionId: String, token: String) = {
+      http("Get Workflow Tools")
+        .get(s"/workflows/${workflowId}/dag/${workflowVersionId}")
+        .headers(authHeader(token))
     }
 
     /*
@@ -191,7 +209,6 @@ object Requests {
     "/workflows/manualRegister": {
     "/workflows/{workflowId}/workflowVersions": {
     "/workflows/{workflowId}/dag/{workflowVersionId}": {
-    "/workflows/{workflowId}/tools/{workflowVersionId}": {
     "/workflows/{workflowId}/star": {
     "/workflows/{workflowId}/unstar": {
     "/workflows/{entryId}/registerCheckerWorkflow/{descriptorType}": {

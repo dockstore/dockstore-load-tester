@@ -19,7 +19,7 @@ object CreateAndUpdateHostedWorkflow {
 
   def create =
     feed(workflowNameFeeder)
-      .exec(Workflow.createHostedWorkflow("${workflowName}", "${token}", "wdl")
+      .exec(Workflow.createHosted("${workflowName}", "${token}", "wdl")
         .check(status in(200, 201)) // Should be 201, but https://github.com/ga4gh/dockstore/issues/1859
         .check(jsonPath("$.id").saveAs("id")))
 

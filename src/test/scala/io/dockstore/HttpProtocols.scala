@@ -7,13 +7,12 @@ object HttpProtocols {
 
   val baseHttpProtocol = http.acceptHeader("application/json").acceptEncodingHeader("gzip, deflate")
 
-  val localhostHttpProtocol = baseHttpProtocol
-    .baseUrl("http://localhost:8080")
-
-  val stagingHttpProtocol = baseHttpProtocol
-    .baseUrl("https://staging.dockstore.org")
-
-  val alphaHttpProtocol = baseHttpProtocol
-    .baseUrl("https://alpha.dockstore.org")
+  /**
+    * Returns an HttpProtocolBuilder for the specified baseUrl. The baseUrl should include the protocol and domain, e.g.,
+    * http://localhost:8080, https://alpha.dockstore.org, etc.
+    * @param baseUrl
+    * @return
+    */
+  def getProtocol(baseUrl: String) = baseHttpProtocol.baseUrl(baseUrl)
 
 }

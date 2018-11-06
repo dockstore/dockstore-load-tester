@@ -20,11 +20,11 @@ object WorkflowsPageSearch {
   private val searchTermFeeder = csv("data/workflowSearchTerms.csv").random
 
   val search = feed(searchTermFeeder).exec(
-    Workflow.getPublishedWorkflows()
+    Workflow.getPublished()
       .check(status is 200))
     .pause(1)
     .exec(
-      Workflow.getPublishedWorkflows("${term}")
+      Workflow.getPublished("${term}")
         .check(status is 200)
         .check(jsonPath("$[*].id").findRandom.saveAs("id"))
         .check(jsonPath("$[?(@.id == ${id})].full_workflow_path").transform(path => Utils.encode(path)).saveAs("repo"))
@@ -50,7 +50,7 @@ object WorkflowsPageSearch {
     .exec(
       MetaData.getDescriptorLanguageList
         .resources(
-          Workflow.getWorkflowStarredUsers("${id}")
+          Workflow.getStarredUsers("${id}")
             .check(status is 200),
           Ga4gh2.getNflFiles("${fullWorkflowPath}", "${version}")
             .check(status in(200, 204)),
