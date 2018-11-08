@@ -10,22 +10,24 @@ import io.gatling.http.Predef._
 object Accounts {
 
   val accountsPage =
-    exec(
-      Ga4gh2.getMetadata
-        .check(status is 200)
-    )
-  exec(
-    User.getUser("${token}")
-      .check(status is 200)
-      .check(jsonPath("$.id").saveAs("userId"))
-      .check(jsonPath("$.username").saveAs("username"))
-  )
-    .exec(
-      User.getTokens("${userId}", "${token}")
-        .check(status is 200)
-    )
-    .exec(
-      User.checkUsername("${username}", "${token}")
-        .check(status is 200)
-    )
+    doIf(session => !session("token").as[String].equals(Requests.ANONOYMOUS)) {
+      exec(
+        Ga4gh2.getMetadata
+          .check(status is 200)
+      )
+      exec(
+        User.getUser("${token}")
+          .check(status is 200)
+          .check(jsonPath("$.id").saveAs("userId"))
+          .check(jsonPath("$.username").saveAs("username"))
+      )
+        .exec(
+          User.getTokens("${userId}", "${token}")
+            .check(status is 200)
+        )
+        .exec(
+          User.checkUsername("${username}", "${token}")
+            .check(status is 200)
+        )
+    }
 }

@@ -48,11 +48,6 @@ object WorkflowsPageSearch {
     })
 
     .exec(
-      User.getUser("${token}")
-        .check(jsonPath("$.id").saveAs("userId"))
-    )
-
-    .exec(
       MetaData.getDescriptorLanguageList
         .resources(
           Ga4gh2.getNflFiles("${fullWorkflowPath}", "${version}")
@@ -73,21 +68,30 @@ object WorkflowsPageSearch {
         .check(status in(200, 204)) // Some versions have no source files
     )
 
-    .exec(
-      Workflow.getStarredUsers("${id}")
-        .check(status is 200)
-        .check(jsonPath("$[?(@.id == ${userId})].id").transformOption(id => { id.orElse(Some(""))}).saveAs("starredId"))
+  doIf(session => !session("token").as[String].equals(Requests.ANONOYMOUS)) {
+    exec(
+      User.getUser("${token}")
+        .check(jsonPath("$.id").saveAs("userId"))
     )
 
-    .doIfEqualsOrElse("${starredId}", "") {
-      exec(
-        Workflow.star("${id}", "${token}")
-          .check(status is 204)
+      .exec(
+        Workflow.getStarredUsers("${id}")
+          .check(status is 200)
+          .check(jsonPath("$[?(@.id == ${userId})].id").transformOption(id => {
+            id.orElse(Some(""))
+          }).saveAs("starredId"))
       )
-    } {
-      exec(
-        Workflow.unstar("${id}", "${token}")
-          .check(status is 204)
-      )
-    }
+
+      .doIfEqualsOrElse("${starredId}", "") {
+        exec(
+          Workflow.star("${id}", "${token}")
+            .check(status is 204)
+        )
+      } {
+        exec(
+          Workflow.unstar("${id}", "${token}")
+            .check(status is 204)
+        )
+      }
+  }
 }

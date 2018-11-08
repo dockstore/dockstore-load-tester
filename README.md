@@ -27,8 +27,11 @@ token
 4b9f337371353f3919dbed3d1b007f0ff257d2e9d30f333f9954f2ff3fd3354b
 2b9f337371353f3919daaa3d1b007f0ff257d2e9d30f333f9954f2ff3fd335c3
 1b9f337371353f3919dbbb3d1b007f0ff257d2e9d30f333f9954f2ff3fd3355d
+anonymous
 ```
-
+To simulate anonymous users, add the literal string `anonymous`. Add it multiple times if you want to increase the
+ratio of anonymous to authenticated users. In the above example, ~25% of the calls will be made by an anonymous user; if you want
+~50% of the calls made by an anonymous user, add `anonymous` 2 more times, which would make 3 of the 6 tokens anonymous.
 
 #### Endpoints
 
