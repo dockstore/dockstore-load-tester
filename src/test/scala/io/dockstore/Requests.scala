@@ -173,10 +173,29 @@ object Requests {
         .headers(authHeader(token))
     }
 
+    def getStarredUsers(workflowId: String, token: String) = {
+      http("Get workflow starred users")
+        .get("/workflows/{workflowId}/starredUsers")
+        .headers(authHeader(token))
+        .check(status is 200)
+    }
+
+    def star(workflowId: String, token: String) = {
+      http("Star Workflow")
+        .put(s"/workflows/${workflowId}/star")
+        .body(StringBody("""{ "star": "true" }""")).asJson
+        .headers(authHeader(token))
+    }
+
+    def unstar(workflowId: String, token: String) = {
+      http("Unstar Workflow")
+        .delete(s"/workflows/${workflowId}/unstar")
+        .headers(authHeader(token))
+    }
+
     /*
         "/workflows/{workflowId}/publish": {
     "/workflows/{workflowId}/users": {
-    "/workflows/{workflowId}/starredUsers": {
     "/workflows/{workflowId}/wdl": {
     "/workflows/{workflowId}/cwl": {
     "/workflows/{workflowId}": {
@@ -385,12 +404,47 @@ object Requests {
         .headers(authHeader(token))
     }
 
+    def refreshWorkflows(userId: String, token: String) = {
+      http("Refresh user's workflows")
+        .get(s"/users/${userId}/workflows/refresh")
+        .headers(authHeader(token))
+    }
+
+    def refreshOrgWorkflows(userId: String, organization: String, token: String) = {
+      http("Refresh user's workflows")
+        .get(s"/users/${userId}/workflows/${organization}/refresh")
+        .headers(authHeader(token))
+    }
+
+    def getStarredWorkflows(token: String) = {
+      http("Get Starred Workflows")
+        .get("/users/starredWorkflows")
+        .headers(authHeader(token))
+    }
+
+    def refreshContainers(userId: String, token: String) = {
+      http("Refresh user's workflows")
+        .get(s"/users/${userId}/containers/refresh")
+        .headers(authHeader(token))
+    }
+
+    def refreshOrgContainers(userId: String, organization: String, token: String) = {
+      http("Refresh user's workflows")
+        .get(s"/users/${userId}/containers/${organization}/refresh")
+        .headers(authHeader(token))
+    }
+
+    def getStarredTools(token: String) = {
+      http("Get Starred Tools")
+        .get("/users/starredTools")
+        .headers(authHeader(token))
+    }
+
     /*
         "/users/updateUserMetadata": {
     "/users/{userId}": {
     "/users/groups/{groupId}": {
     "/users/groups": {
-    "/users/{userId}/containers/refresh": {
     "/users/username/{username}": {
     "/users/user/changeUsername": {
     "/users/{userId}/tokens/github.com": {
@@ -400,13 +454,6 @@ object Requests {
     "/users/{userId}/groups": {
     "/users/groups/{groupId}/users": {
     "/users/{userId}/groups/{groupId}": {
-    "/users/{userId}/containers/published": {
-    "/users/{userId}/workflows/published": {
-    "/users/{userId}/containers/{organization}/refresh": {
-    "/users/{userId}/workflows/{organization}/refresh": {
-    "/users/{userId}/workflows/refresh": {
-    "/users/starredTools": {
-    "/users/starredWorkflows": {
     "/users/user/updateUserMetadata": {
 
      */

@@ -36,9 +36,24 @@ token
 
 ### Run
 
+You can configure the following properties with `-D`, e.g., `-Dusers=50`:
+
+* users -- the number of users to simulate; defaults to 20
+* atOnce -- true if all users should hit at once, or if they should ramp up over time; defaults to true
+* rampMinutes -- if `atOnce` is not true, the number of minutes the specified number of users will be phased in
+* baseUrl -- the Dockstore webservice endpoint to run the tests against; defaults to `http://localhost:8080`
+* scenario -- the name of the scenario to run; see DockstoreWebUser.scala for all available; defaults to `Everything`, which runs (almost) everything
+* maxResponseTimeMs -- if any API call takes longer than this, simulation will fail; default is 10,000, which is probably too low
+* successThreshold -- the precentage of calls that should pass; if less, the simulation fails; default is 95
+
+Regarding the last two items, the tests will still run to completion; there will 
+
+The default values are defined in the `<properties>` section of the pom.xml.
 ```bash
 mvn clean test-compile gatling:test
 ```
+
+
 
 ## Tips
 
@@ -47,16 +62,20 @@ expression.
 
 ## Todo
 
-1. Setting up tokens is too manual
-2. The scenario that gets run should be configurable.
-3. The endpoint of the backend API should be configurable.
-4. The number of users and when/how they get injected should be configurable.
-5. Would be nice to randomize the scenario. Maybe run multiple simulations at once? Needs research.
-6. Configurably set Gatling `.disableCaching` parameter.
+1. Configurably set Gatling `.disableCaching` parameter.
    1. For simulating web users, I assume the caching is done
 on a per-user basis, which is what we would want, as the browser would cache requests based on headers. Need to verify.
    2. For simulating API calls, we probably want to disable caching, as HTTP client libraries don't do that, AFAIK.
-7. SearchPage only searches author; only searches one term
-8. Investigate using something like https://github.com/nuxeo/gatling-report to compare results
-9. Doesn't test integration with external repos, e.g., refreshing from GitHub
+1. SearchPage only searches one term, author. Ideally would do more complex searches.
+1. Investigate using something like https://github.com/nuxeo/gatling-report to compare results
+1. Doesn't test integration with external repos, e.g., refreshing from GitHub
+1. Add checks for things that take too long. This is done globally and is configurable, but should maybe add checks
+for certain key APIs.
+1. Figure out creating hosted tools test. Problem is that I cannot generate a unique name for the tools like I can for workflows.
+1. A lot of endpoints are not tested. See Requests.scala -- all the paths that are commented out are not tested.
+1. Current simulation, DockstoreWebUser.scala, more or less simulates the calls a web user would make by
+visiting various Dockstore web pages. There are other simulations we should consider modeling
+    1. Scripts or other programmatic access to the API
+    1. Emulate how Broad UI might access Dockstore
+    1. ??? 
 

@@ -22,18 +22,22 @@ class DockstoreWebUser extends Simulation {
 
   private val tokenFeeder = csv("data/tokens.csv").random
 
+  private val everythingScenario = "Everything"
+
   val scenarios = Array(
-    scenario("HostedWorkflowCrud").feed(tokenFeeder).exec(CreateAndUpdateHostedWorkflow.create),
-    scenario("HostedToolCrud").feed(tokenFeeder).exec(CreateAndUpdateHostedTool.create),
-    scenario("Home").exec(HomePage.open),
-    scenario("ToolsSearch").exec(ToolsPageSearch.search),
-    scenario("WorkflowsSearch").exec(WorkflowsPageSearch.search),
-    scenario("ToolsAndWorkflowsSearch").exec(ToolsPageSearch.search, WorkflowsPageSearch.search),
-    scenario("SearchPage").exec(SearchPage.search),
-    scenario("PublishRandomHostedWorkflow").feed(tokenFeeder).exec(HostedWorkflows.fetchRandomAndTogglePublish),
     scenario("Account").feed(tokenFeeder).exec(Accounts.accountsPage),
+    scenario("Home").exec(HomePage.open),
+    scenario("HostedToolCrud").feed(tokenFeeder).exec(CreateAndUpdateHostedTool.create),
+    scenario("HostedWorkflowCrud").feed(tokenFeeder).exec(CreateAndUpdateHostedWorkflow.create),
     scenario("MyWorkflows").feed(tokenFeeder).exec(MyWorkflows.myWorkflows),
-    scenario("Everything").feed(tokenFeeder).exec(
+    scenario("PublishRandomHostedWorkflow").feed(tokenFeeder).exec(HostedWorkflows.fetchRandomAndTogglePublish),
+    scenario("SearchPage").exec(SearchPage.search),
+    scenario("Starred").feed(tokenFeeder).exec(StarredToolsAndWorkflows.page),
+    scenario("ToolsAndWorkflowsSearch").exec(ToolsPageSearch.search, WorkflowsPageSearch.search),
+    scenario("ToolsSearch").exec(ToolsPageSearch.search),
+    scenario("WorkflowsSearch").feed(tokenFeeder).exec(WorkflowsPageSearch.search),
+
+    scenario(everythingScenario).feed(tokenFeeder).exec(
       HomePage.open,
       Accounts.accountsPage,
       ToolsPageSearch.search,
@@ -41,7 +45,8 @@ class DockstoreWebUser extends Simulation {
       SearchPage.search,
       CreateAndUpdateHostedWorkflow.create,
       HostedWorkflows.fetchRandomAndTogglePublish,
-      MyWorkflows.myWorkflows
+      MyWorkflows.myWorkflows,
+      StarredToolsAndWorkflows.page
     )
   )
 
@@ -57,11 +62,15 @@ class DockstoreWebUser extends Simulation {
     maybeBuilder
   }
 
-  getScenario(System.getProperty("scenario", "Everything")).map(sb => {
+  getScenario(System.getProperty("scenario", everythingScenario)).map(sb => {
+    val defaultMaxResponseTimeMs  = (10 seconds).toMillis.toInt
+
     val users = Integer.getInteger("users", 20)
     val rampMinutes = Integer.getInteger("rampMinutes", 5)
     val baseUrl = System.getProperty("baseUrl", "http://localhost:8080")
     val atOnce = "true".equals(System.getProperty("atOnce"))
+    val maxResponseTimeMs = Integer.getInteger("maxResponseTimeMs", defaultMaxResponseTimeMs)
+    val successThreshold = Integer.getInteger("successThreshold", 95).doubleValue()
 
     val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl)
 
@@ -70,8 +79,15 @@ class DockstoreWebUser extends Simulation {
     print(s"against ${baseUrl}.")
     println()
 
-    if (atOnce) setUp(sb.inject(atOnceUsers(users))).protocols(httpProtocolBuilder)
-    else setUp(sb.inject(rampUsers(users) during (rampMinutes minutes))).protocols(httpProtocolBuilder)
+    def setupScenario = {
+      if (atOnce) setUp(sb.inject(atOnceUsers(users))).protocols(httpProtocolBuilder)
+      else setUp(sb.inject(rampUsers(users) during (rampMinutes minutes))).protocols(httpProtocolBuilder)
+    }
+
+    setupScenario.assertions(
+      global.successfulRequests.percent.gt(successThreshold),
+      global.responseTime.max.lt(maxResponseTimeMs) // milliseconds
+    )
   })
 
 }

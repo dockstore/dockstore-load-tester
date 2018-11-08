@@ -17,8 +17,10 @@
 
         <atOnce>true</atOnce>
         <baseUrl>http://localhost:8080</baseUrl>
-        <users>2</users>
+        <users>20</users>
         <rampMinutes>10</rampMinutes>
+        <maxResponseTimeMs>10000</maxResponseTimeMs>
+        <successThreshold>95</successThreshold>
         <scenario>Everything</scenario>
 
     </properties>

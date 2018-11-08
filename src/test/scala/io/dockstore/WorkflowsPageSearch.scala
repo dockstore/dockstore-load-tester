@@ -1,6 +1,6 @@
 package io.dockstore
 
-import io.dockstore.Requests.{Ga4gh2, MetaData, Workflow}
+import io.dockstore.Requests.{Ga4gh2, MetaData, User, Workflow}
 import io.gatling.commons.util.TypeHelper
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
@@ -48,10 +48,13 @@ object WorkflowsPageSearch {
     })
 
     .exec(
+      User.getUser("${token}")
+        .check(jsonPath("$.id").saveAs("userId"))
+    )
+
+    .exec(
       MetaData.getDescriptorLanguageList
         .resources(
-          Workflow.getStarredUsers("${id}")
-            .check(status is 200),
           Ga4gh2.getNflFiles("${fullWorkflowPath}", "${version}")
             .check(status in(200, 204)),
           Ga4gh2.getCwlFiles("${fullWorkflowPath}", "${version}")
@@ -67,6 +70,24 @@ object WorkflowsPageSearch {
 
     .exec(
       Workflow.downloadWorkflowAsZip("${id}", "${versionId}")
-        .check(status in (200, 204)) // Some versions have no source files
+        .check(status in(200, 204)) // Some versions have no source files
     )
+
+    .exec(
+      Workflow.getStarredUsers("${id}")
+        .check(status is 200)
+        .check(jsonPath("$[?(@.id == ${userId})].id").transformOption(id => { id.orElse(Some(""))}).saveAs("starredId"))
+    )
+
+    .doIfEqualsOrElse("${starredId}", "") {
+      exec(
+        Workflow.star("${id}", "${token}")
+          .check(status is 204)
+      )
+    } {
+      exec(
+        Workflow.unstar("${id}", "${token}")
+          .check(status is 204)
+      )
+    }
 }

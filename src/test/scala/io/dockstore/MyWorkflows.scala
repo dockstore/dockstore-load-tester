@@ -11,6 +11,10 @@ object MyWorkflows {
       .check(status is 200)
   )
     .exec(
+      User.getUser("${token}")
+        .check(status is 200)
+    )
+    .exec(
       MetaData.getSourceControlList
         .check(status is 200)
     )
