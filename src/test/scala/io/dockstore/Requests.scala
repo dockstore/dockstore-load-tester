@@ -3,6 +3,26 @@ package io.dockstore
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
+/**
+  * <p>Simple wrapper for Dockstore API requests. Some reasons for the wrapper:
+  * <ul>
+  *   <li>Compiler can catch unused methods</li>
+  *   <li>Assures a common http name across all invocations of an API (Gatling groups by name)</li>
+  *   <li>Slightly useful reusable code for inserting authorization
+  * </ul>
+  *
+  *
+  * <p>This is divided up into objects that correspond to the <code>@Api()</code> annotations in the Dockstore code, or, viewed
+  * another way, the different tags in the Swagger doc.
+  *
+  * <p>The goal is that every Dockstore API should have a corresponding method here. So far, methods only exist for APIs that
+  * are tested from the existing simulation; new methods are added as the tests expand.
+  *
+  * <p>Endpoints that don't yet have corresponding methods have their paths in comments within each object.
+  *
+  * <p>This can get out of sync with the actual Dockstore API as the Dockstore API changes.
+  */
+
 object Requests {
 
   private def authHeader(token: String) = {

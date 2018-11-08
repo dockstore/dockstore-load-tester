@@ -49,10 +49,21 @@ You can configure the following properties with `-D`, e.g., `-Dusers=50`:
 Regarding the last two items, the tests will still run to completion; there will 
 
 The default values are defined in the `<properties>` section of the pom.xml.
+
 ```bash
 mvn clean test-compile gatling:test
 ```
 
+#### Results
+
+At the end of the run, the output location will be displayed, that you can open in a browser, e.g.,
+
+```bash
+Please open the following file: /Users/charlesoverbeck/git/dockstore/dockstore-load-tester/target/gatling/dockstorewebuser-20181108213044663/index.html
+```
+
+The directory with the index.html file also has a `simulation.log` file, which has the raw data, if you wish to look at it in a non-GUI
+format.
 
 
 ## Tips
