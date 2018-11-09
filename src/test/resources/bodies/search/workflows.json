@@ -1,0 +1,17 @@
+{
+ "size": 20,
+ "_source": false,
+ "query": {
+  "match": {
+   "_type": "workflow"
+  }
+ },
+ "aggs": {
+  "tagcloud": {
+   "significant_terms": {
+    "field": "description",
+    "size": 20
+   }
+  }
+ }
+}

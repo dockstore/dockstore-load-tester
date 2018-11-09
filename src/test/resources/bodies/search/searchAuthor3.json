@@ -1,0 +1,32 @@
+{
+  "size": 201,
+  "_source": false,
+  "query": {
+    "bool": {
+      "filter": {
+        "bool": {
+          "must": {
+            "term": {
+              "author": "${author}"
+            }
+          },
+          "must_not": [
+            {
+              "term": {
+                "tags.verified": true
+              }
+            },
+            {
+              "term": {
+                "workflowVersions.verified": true
+              }
+            }
+          ]
+        }
+      },
+      "must": {
+        "match_all": {}
+      }
+    }
+  }
+}
