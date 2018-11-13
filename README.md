@@ -68,6 +68,29 @@ Please open the following file: /Users/charlesoverbeck/git/dockstore/dockstore-l
 The directory with the index.html file also has a `simulation.log` file, which has the raw data, if you wish to look at it in a non-GUI
 format.
 
+### Comparing Results
+
+The GitHub release has a gatling-report-3.0 JAR that you can use to compare different runs.
+
+```java
+java -jar gatling-report-3.0-SNAPSHOT-capsule-fat.jar target/gatling/dockstorewebuser-20181109062654032/simulation.log \
+    target/gatling/dockstorewebuser-20181113210759185/simulation.log \
+    -o newdirectory
+```
+
+This will generate a newdirectory/index.html file, which you can open in the browser to get a view like this ![nuxeo screenshot](nuxeo-screenshot.png).
+
+#### Where the JAR came from, and why
+
+The JAR is built locally from 
+[https://github.com/coverbeck/gatling-report/tree/gatling_3_0_support](https://github.com/coverbeck/gatling-report/tree/gatling_3_0_support),
+a fork of [https://github.com/nuxeo/gatling-report](https://github.com/nuxeo/gatling-report). It is forked because
+the nuxeo code currently does not work with Gatling 3.0 simulation.log files. A [PR](https://github.com/nuxeo/gatling-report/pull/14) has
+been submitted to fix this, but until it is merged and an "official" release can be downloaded, we are attaching the binary to the
+GitHub Release.
+
+Alternatively, you can clone [https://github.com/coverbeck/gatling-report](https://github.com/coverbeck/gatling-report), checkout
+the gatling_3_0_support branch, run `mvn clean package`, and use the generated JAR. 
 
 ## Tips
 
@@ -81,7 +104,6 @@ expression.
 on a per-user basis, which is what we would want, as the browser would cache requests based on headers. Need to verify.
    2. For simulating API calls, we probably want to disable caching, as HTTP client libraries don't do that, AFAIK.
 1. SearchPage only searches one term, author. Ideally would do more complex searches.
-1. Investigate using something like https://github.com/nuxeo/gatling-report to compare results
 1. Doesn't test integration with external repos, e.g., refreshing from GitHub
 1. Add checks for things that take too long. This is done globally and is configurable, but should maybe add checks
 for certain key APIs.
