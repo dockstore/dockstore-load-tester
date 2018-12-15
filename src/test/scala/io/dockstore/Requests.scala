@@ -168,7 +168,7 @@ object Requests {
         .patch(s"/workflows/hostedEntry/${id}")
         .headers(authHeader(token))
         .headers(Map("Content-type" -> "application/json"))
-        .body(RawFileBody(filename))
+        .body(PebbleFileBody(filename))
     }
 
     def downloadWorkflowAsZip(workflowId: String, version: String) = {
