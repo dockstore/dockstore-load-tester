@@ -34,7 +34,7 @@ object Utils {
     }
 
     val sb = new StringBuilder
-    for (i <- 0 until numberOfLinesToGenerate) {
+    for (i <- 1 until numberOfLinesToGenerate) {
       sb.append(s"\\n# ${Random.alphanumeric take COMMENT_LINE_LENGTH mkString}")
     }
     sb.mkString
