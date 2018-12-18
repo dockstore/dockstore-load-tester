@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/dockstore/dockstore-load-tester.svg?branch=master)](https://travis-ci.org/dockstore/dockstore-load-tester.svg?branch=master)
+
 # dockstore-load-tester
 Dockstore Load/Performance/Stress Tester
 
@@ -49,7 +51,7 @@ You can configure the following properties with `-D`, e.g., `-Dusers=50`:
 * maxResponseTimeMs -- if any API call takes longer than this, simulation will fail; default is 10,000, which is probably too low
 * successThreshold -- the precentage of calls that should pass; if less, the simulation fails; default is 95
 
-Regarding the last two items, the tests will still run to completion; there will 
+Regarding the last two items, the tests will still run to completion; there will a message at the end saying the tests failed.
 
 The default values are defined in the `<properties>` section of the pom.xml.
 
