@@ -24,7 +24,7 @@ object Utils {
     * larger. We assume the average workflow is AVERAGE_SIZE_OF_ENTRY bytes in length,
     * so generate enough comments to make a standard distribution of comments around the mean of
     * AVERAGE_SIZE_OF_ENTRY.
-    * @return
+    * @return a string of multiple comments separated by newline characters
     */
   def randomWdlComments: String = {
 
