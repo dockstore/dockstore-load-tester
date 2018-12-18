@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/dockstore/dockstore-load-tester.svg?branch=master)](https://travis-ci.org/dockstore/dockstore-load-tester.svg?branch=master)
+
 # dockstore-load-tester
 Dockstore Load/Performance/Stress Tester
 
