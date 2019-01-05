@@ -6,15 +6,14 @@ import io.gatling.http.Predef._
 
 object StarredToolsAndWorkflows {
 
-  val page =
-    doIf(session => !session("token").as[String].equals(Requests.ANONOYMOUS)) {
-      exec(
-        User.getStarredTools("${token}")
-          .check(status is 200)
-          .resources(
-            User.getStarredWorkflows("${token}")
-              .check(status is 200)
-          )
-      )
-    }
+  val page = {
+    exec(
+      User.getStarredTools("${token}")
+        .check(status is 200)
+        .resources(
+          User.getStarredWorkflows("${token}")
+            .check(status is 200)
+        )
+    )
+  }
 }

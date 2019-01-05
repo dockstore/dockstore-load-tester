@@ -8,63 +8,61 @@ import io.gatling.http.Predef._
 object MyWorkflows {
 
   val myWorkflows =
-    doIf(session => !session("token").as[String].equals(Requests.ANONOYMOUS)) {
-      exec(
-        MetaData.getDescriptorLanguageList
+    exec(
+      MetaData.getDescriptorLanguageList
+        .check(status is 200)
+    )
+      .exec(
+        User.getUser("${token}")
           .check(status is 200)
       )
-        .exec(
-          User.getUser("${token}")
-            .check(status is 200)
-        )
-        .exec(
-          MetaData.getSourceControlList
-            .check(status is 200)
-        )
-        .exec(
-          User.getUser("${token}")
-            .check(status is 200)
-            .check(jsonPath("$.id").saveAs("userId"))
-            .resources(
-              User.getWorkflows("${userId}", "${token}")
-                .check(status is 200)
-                .check(jsonPath("$[0].id").saveAs("workflowId")),
-              Workflow.getShared("${token}")
-                .check(status is 200)
-            )
-        )
-        .exec(
-          Workflow.getWorkflow("${workflowId}", "${token}")
-            .check(status is 200)
-            .check(jsonPath("$.full_workflow_path").transform(path => Utils.encodeWorkflow(path)).saveAs("fullWorkflowPath"))
-            .check(jsonPath("$.defaultVersion").saveAs("version"))
-            .check(jsonPath("$.workflowVersions[0].name").saveAs("firstVersion"))
-            // TODO: Should get versionId based on defaultVersion, if present
-            .check(jsonPath("$.workflowVersions[0].id").saveAs("versionId"))
-            .check(status is 200)
-        )
-        .exec(session => {
-          // If default version is not set, grab the first version.
-          val hasVersion = (session("version").validate[String] != TypeHelper.NullValueFailure)
-          if (!hasVersion) session.set("version", session("firstVersion").as[String]) else session
-        })
+      .exec(
+        MetaData.getSourceControlList
+          .check(status is 200)
+      )
+      .exec(
+        User.getUser("${token}")
+          .check(status is 200)
+          .check(jsonPath("$.id").saveAs("userId"))
+          .resources(
+            User.getWorkflows("${userId}", "${token}")
+              .check(status is 200)
+              .check(jsonPath("$[0].id").saveAs("workflowId")),
+            Workflow.getShared("${token}")
+              .check(status is 200)
+          )
+      )
+      .exec(
+        Workflow.getWorkflow("${workflowId}", "${token}")
+          .check(status is 200)
+          .check(jsonPath("$.full_workflow_path").transform(path => Utils.encodeWorkflow(path)).saveAs("fullWorkflowPath"))
+          .check(jsonPath("$.defaultVersion").saveAs("version"))
+          .check(jsonPath("$.workflowVersions[0].name").saveAs("firstVersion"))
+          // TODO: Should get versionId based on defaultVersion, if present
+          .check(jsonPath("$.workflowVersions[0].id").saveAs("versionId"))
+          .check(status is 200)
+      )
+      .exec(session => {
+        // If default version is not set, grab the first version.
+        val hasVersion = (session("version").validate[String] != TypeHelper.NullValueFailure)
+        if (!hasVersion) session.set("version", session("firstVersion").as[String]) else session
+      })
 
-        .exec(
-          Workflow.getTools("${workflowId}", "${versionId}", "${token}")
-            .check(status in(200, 204))
-            .resources(
-              Workflow.getDag("${workflowId}", "${versionId}", "${token}")
-                .check(status in(200, 204)),
-              Workflow.getStarredUsers("${workflowId}")
-                .check(status is 200),
-              Ga4gh2.getNflFiles("${fullWorkflowPath}", "${version}", "${token}")
-                .check(status in(200, 204)),
-              Ga4gh2.getCwlFiles("${fullWorkflowPath}", "${version}", "${token}")
-                .check(status in(200, 204)),
-              Ga4gh2.getWdlFiles("${fullWorkflowPath}", "${version}", "${token}")
-                .check(status in(200, 204))
+      .exec(
+        Workflow.getTools("${workflowId}", "${versionId}", "${token}")
+          .check(status in(200, 204))
+          .resources(
+            Workflow.getDag("${workflowId}", "${versionId}", "${token}")
+              .check(status in(200, 204)),
+            Workflow.getStarredUsers("${workflowId}")
+              .check(status is 200),
+            Ga4gh2.getNflFiles("${fullWorkflowPath}", "${version}", "${token}")
+              .check(status in(200, 204)),
+            Ga4gh2.getCwlFiles("${fullWorkflowPath}", "${version}", "${token}")
+              .check(status in(200, 204)),
+            Ga4gh2.getWdlFiles("${fullWorkflowPath}", "${version}", "${token}")
+              .check(status in(200, 204))
 
-            )
-        )
-    }
+          )
+      )
 }

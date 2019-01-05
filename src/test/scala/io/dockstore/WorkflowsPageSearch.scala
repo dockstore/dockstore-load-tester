@@ -68,7 +68,7 @@ object WorkflowsPageSearch {
         .check(status in(200, 204)) // Some versions have no source files
     )
 
-  doIf(session => !session("token").as[String].equals(Requests.ANONOYMOUS)) {
+  doIf(session => session("token").validate[String] != TypeHelper.NullValueFailure) {
     exec(
       User.getUser("${token}")
         .check(jsonPath("$.id").saveAs("userId"))

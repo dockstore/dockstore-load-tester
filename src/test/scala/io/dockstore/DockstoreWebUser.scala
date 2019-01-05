@@ -65,7 +65,7 @@ class DockstoreWebUser extends Simulation {
   getScenario(System.getProperty("scenario", everythingScenario)).map(sb => {
     val defaultMaxResponseTimeMs  = (10 seconds).toMillis.toInt
 
-    val users = Integer.getInteger("users", 20)
+    val authUsers = Integer.getInteger("authUsers", 20)
     val rampMinutes = Integer.getInteger("rampMinutes", 5)
     val baseUrl = System.getProperty("baseUrl", "http://localhost:8080")
     val atOnce = "true".equals(System.getProperty("atOnce"))
@@ -74,14 +74,14 @@ class DockstoreWebUser extends Simulation {
 
     val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl)
 
-    print(s"Executing for ${users} users, ")
+    print(s"Executing for ${authUsers} authorized users, ")
     if (atOnce) print("all at once, ") else println(s"over ${rampMinutes} minutes, ")
     print(s"against ${baseUrl}.")
     println()
 
     def setupScenario = {
-      if (atOnce) setUp(sb.inject(atOnceUsers(users))).protocols(httpProtocolBuilder)
-      else setUp(sb.inject(rampUsers(users) during (rampMinutes minutes))).protocols(httpProtocolBuilder)
+      if (atOnce) setUp(sb.inject(atOnceUsers(authUsers))).protocols(httpProtocolBuilder)
+      else setUp(sb.inject(rampUsers(authUsers) during (rampMinutes minutes))).protocols(httpProtocolBuilder)
     }
 
     setupScenario.assertions(

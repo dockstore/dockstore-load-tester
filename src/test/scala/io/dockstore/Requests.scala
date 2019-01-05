@@ -25,8 +25,6 @@ import io.gatling.http.Predef._
 
 object Requests {
 
-  val ANONOYMOUS = "anonymous"
-
   private def authHeader(token: String) = {
     Map("Authorization" -> s"Bearer ${token}")
   }
