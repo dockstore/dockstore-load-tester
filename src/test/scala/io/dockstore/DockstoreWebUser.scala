@@ -20,7 +20,7 @@ import scala.concurrent.duration._
   */
 class DockstoreWebUser extends Simulation {
 
-  private val tokenFeeder = csv("data/tokens.csv").random
+  private val tokenFeeder = csv("data/dummyUsersAndTokens.csv").random
 
   private val everythingScenario = "Everything"
 
