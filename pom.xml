@@ -12,13 +12,14 @@
         <scala.version>2.12.7</scala.version>
         <encoding>UTF-8</encoding>
         <gatling-plugin.version>3.0.0</gatling-plugin.version>
-        <gatling.version>3.0.1.1</gatling.version>
+        <gatling.version>3.0.2</gatling.version>
         <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>
 
-        <atOnce>true</atOnce>
+        <atOnce>false</atOnce>
         <baseUrl>http://localhost:8080</baseUrl>
-        <users>20</users>
-        <rampMinutes>10</rampMinutes>
+        <authUsers>50</authUsers>
+        <anonUsers>50</anonUsers>
+        <rampMinutes>5</rampMinutes>
         <maxResponseTimeMs>10000</maxResponseTimeMs>
         <successThreshold>95</successThreshold>
         <scenario>Everything</scenario>

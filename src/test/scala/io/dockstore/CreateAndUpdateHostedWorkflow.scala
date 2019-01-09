@@ -17,25 +17,24 @@ object CreateAndUpdateHostedWorkflow {
 
   private val workflowNameFeeder = Iterator.continually(Map("workflowName" -> randomUUID().toString))
 
-  def create =
-    doIf(session => !session("token").as[String].equals(Requests.ANONOYMOUS)) {
+  def create = {
 
-      val randomComments = "randomComments" // The Pebble variable in HostedWdlWorkflow.json
+    val randomComments = "randomComments" // The Pebble variable in HostedWdlWorkflow.json
 
-      feed(workflowNameFeeder)
-        .exec(Workflow.createHosted("${workflowName}", "${token}", "wdl")
-          .check(status in(200, 201)) // Should be 201, but https://github.com/ga4gh/dockstore/issues/1859
-          .check(jsonPath("$.id").saveAs("id")))
+    feed(workflowNameFeeder)
+      .exec(Workflow.createHosted("${workflowName}", "${token}", "wdl")
+        .check(status in(200, 201)) // Should be 201, but https://github.com/ga4gh/dockstore/issues/1859
+        .check(jsonPath("$.id").saveAs("id")))
 
-        .exec(session => session.set(randomComments, Utils.randomWdlComments))
+      .exec(session => session.set(randomComments, Utils.randomWdlComments))
 
-        .exec(Workflow.addFileToHostedWorkflow("${id}", "${token}", "bodies/hosted/HostedWdlWorkflow.json")
-          .check(status is 200))
-
-        .exec(session => session.set(randomComments, Utils.randomWdlComments))
-
-        // Save another revision
-        .exec(Workflow.addFileToHostedWorkflow("${id}", "${token}", "bodies/hosted/HostedWdlWorkflow.json")
+      .exec(Workflow.addFileToHostedWorkflow("${id}", "${token}", "bodies/hosted/HostedWdlWorkflow.json")
         .check(status is 200))
-    }
+
+      .exec(session => session.set(randomComments, Utils.randomWdlComments))
+
+      // Save another revision
+      .exec(Workflow.addFileToHostedWorkflow("${id}", "${token}", "bodies/hosted/HostedWdlWorkflow.json")
+      .check(status is 200))
+  }
 }

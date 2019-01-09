@@ -20,9 +20,11 @@ import scala.concurrent.duration._
   */
 class DockstoreWebUser extends Simulation {
 
-  private val tokenFeeder = csv("data/tokens.csv").random
+  private val tokenFeeder = csv("data/dummyUsersAndTokens.csv").random
 
   private val everythingScenario = "Everything"
+
+  private val anonymousUsersScenario = "AnonymousUsers"
 
   val scenarios = Array(
     scenario("Account").feed(tokenFeeder).exec(Accounts.accountsPage),
@@ -47,8 +49,20 @@ class DockstoreWebUser extends Simulation {
       HostedWorkflows.fetchRandomAndTogglePublish,
       MyWorkflows.myWorkflows,
       StarredToolsAndWorkflows.page
+    ),
+
+    scenario(anonymousUsersScenario).exec(
+      HomePage.open,
+      ToolsPageSearch.search,
+      WorkflowsPageSearch.search,
+      SearchPage.search
     )
+
   )
+
+  private def getAnonymousScenario = {
+    scenarios.find(s => s.name equals(anonymousUsersScenario)).get
+  }
 
 
   private def getScenario(scenarioName: String) = {
@@ -62,10 +76,11 @@ class DockstoreWebUser extends Simulation {
     maybeBuilder
   }
 
-  getScenario(System.getProperty("scenario", everythingScenario)).map(sb => {
+  getScenario(System.getProperty("scenario", everythingScenario + "," + anonymousUsersScenario)).map(sb => {
     val defaultMaxResponseTimeMs  = (10 seconds).toMillis.toInt
 
-    val users = Integer.getInteger("users", 20)
+    val authUsers = Integer.getInteger("authUsers", 20)
+    val anonUsers = Integer.getInteger("anonUsers", 20);
     val rampMinutes = Integer.getInteger("rampMinutes", 5)
     val baseUrl = System.getProperty("baseUrl", "http://localhost:8080")
     val atOnce = "true".equals(System.getProperty("atOnce"))
@@ -74,14 +89,18 @@ class DockstoreWebUser extends Simulation {
 
     val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl)
 
-    print(s"Executing for ${users} users, ")
+    print(s"Executing for ${authUsers} authorized users and ${anonUsers} anonymous users, ")
     if (atOnce) print("all at once, ") else println(s"over ${rampMinutes} minutes, ")
     print(s"against ${baseUrl}.")
     println()
 
     def setupScenario = {
-      if (atOnce) setUp(sb.inject(atOnceUsers(users))).protocols(httpProtocolBuilder)
-      else setUp(sb.inject(rampUsers(users) during (rampMinutes minutes))).protocols(httpProtocolBuilder)
+      val authUsersRate = if (atOnce) atOnceUsers(authUsers) else rampUsers(authUsers) during(rampMinutes minutes)
+      val anonUsersRate = if (atOnce) atOnceUsers(anonUsers) else rampUsers(anonUsers) during(rampMinutes minutes)
+      val authUsersBuilder = sb.inject(authUsersRate)
+      val anonUsersBuilder = getAnonymousScenario.inject(anonUsersRate);
+      val populationBuilders = if (sb.name equals(everythingScenario)) List(authUsersBuilder, anonUsersBuilder) else List(authUsersBuilder)
+      setUp(populationBuilders).protocols(httpProtocolBuilder)
     }
 
     setupScenario.assertions(

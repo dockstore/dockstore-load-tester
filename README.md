@@ -7,51 +7,35 @@ Dockstore Load/Performance/Stress Tester
 
 ### Setup
 
-#### Tokens
-In `io.dockstore.DockstoreSimulation`, tokens are randomly fed in so that requests
-are made from different users. The tokens are read from `data/tokens.csv`. For both security
-reasons and because different instances of Dockstore will have different token values,
-no token values are checked into `tokens.csv`.
+#### Tokens and Users
 
-The `tokens.csv` value should have at least one token, and can have as many tokens as you
-wish. The Gatling "feeder" randomly extracts a token for each simulated user and
-makes if available. Because the token is randomly selected and because there might
-be more simulated users than tokens, the same token can get inserted more than once. If
-you want to simulate more unique users, add more tokens.
+For authenticated endpoints, the tests use tokens that come from the file `data/dummyUsersAndTokens.csv`.
+Those users and tokens need to be in the Dockstore database. A SQL file, `dummyusers.sql`, will create
+the users and tokens. Direct access to the Dockstore database is required. Assuming Postgres is running in a Docker
+container named `postgres1`, execute the following:
 
-Update `data/tokens.csv`, adding **at least one** Dockstore token. Each token
-should be a valid token for the Dockstore endpoint you are hitting. Each token should
-be on its own line. Make sure to leave the existing title line `token`, as that is the
-variable name that tests will use to access the randomly injected token. Do not check changes
-to the tokens.csv file for the reasons discussed in the first paragraph.
-```csv
-token
-4b9f337371353f3919dbed3d1b007f0ff257d2e9d30f333f9954f2ff3fd3354b
-2b9f337371353f3919daaa3d1b007f0ff257d2e9d30f333f9954f2ff3fd335c3
-1b9f337371353f3919dbbb3d1b007f0ff257d2e9d30f333f9954f2ff3fd3355d
-anonymous
 ```
-To simulate anonymous users, add the literal string `anonymous`. Add it multiple times if you want to increase the
-ratio of anonymous to authenticated users. In the above example, ~25% of the calls will be made by an anonymous user; if you want
-~50% of the calls made by an anonymous user, add `anonymous` 2 more times, which would make 3 of the 6 tokens anonymous.
+docker exec -i postgres1 psql webservice_test -U postgres < dummyusers.sql
+```
 
-#### Endpoints
-
-`io.dockstore.HttpProtocols` has various Dockstore endpoints defined.
+Note: the `dummyusers.sql` was generated from `data/dummyUsersAndTokens.csv` 
+by `src/test/scala/io/dockstore/tools/UserGenerator.scala`; if you need to tweak the SQL you
+should modify the generator.
 
 ### Run
 
-You can configure the following properties with `-D`, e.g., `-Dusers=50`:
+You can configure the following properties with `-D`, e.g., `-DauthUsers=50`. Defaults are in the `pom.xml`.
 
-* users -- the number of users to simulate; defaults to 20
-* atOnce -- true if all users should hit at once, or if they should ramp up over time; defaults to true
-* rampMinutes -- if `atOnce` is not true, the number of minutes the specified number of users will be phased in
+* authUsers -- the number of authenticated users to simulate; defaults to 50
+* anonUsers -- the number of anonymous users to simulate; defaults to 50; only applies if scenario, below, is `Everything`
+* atOnce -- true if all users should hit at once, or if they should ramp up over time; defaults to false
+* rampMinutes -- if `atOnce` is not true, the number of minutes the specified number of users will be phased in; defaults to 5
 * baseUrl -- the Dockstore webservice endpoint to run the tests against; defaults to `http://localhost:8080`
 * scenario -- the name of the scenario to run; see DockstoreWebUser.scala for all available; defaults to `Everything`, which runs (almost) everything
-* maxResponseTimeMs -- if any API call takes longer than this, simulation will fail; default is 10,000, which is probably too low
+* maxResponseTimeMs -- if any API call takes longer than this, simulation will fail; default is 10,000, which is probably too high
 * successThreshold -- the precentage of calls that should pass; if less, the simulation fails; default is 95
 
-Regarding the last two items, the tests will still run to completion; there will a message at the end saying the tests failed.
+Regarding the last two items, the tests will still run to completion; if there is failure, there will a message so indicating at the end.
 
 The default values are defined in the `<properties>` section of the pom.xml.
 
@@ -74,7 +58,7 @@ format.
 
 The GitHub release has a gatling-report-3.0 JAR that you can use to compare different runs.
 
-```java
+```bash
 java -jar gatling-report-3.0-SNAPSHOT-capsule-fat.jar target/gatling/dockstorewebuser-20181109062654032/simulation.log \
     target/gatling/dockstorewebuser-20181113210759185/simulation.log \
     -o newdirectory

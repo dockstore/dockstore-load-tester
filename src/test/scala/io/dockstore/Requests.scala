@@ -25,8 +25,6 @@ import io.gatling.http.Predef._
 
 object Requests {
 
-  val ANONOYMOUS = "anonymous"
-
   private def authHeader(token: String) = {
     Map("Authorization" -> s"Bearer ${token}")
   }
@@ -71,19 +69,22 @@ object Requests {
   }
 
   object Ga4gh2 {
-    def getNflFiles(toolPath: String, version: String) = {
-      http("Get NFL files")
+    def getNflFiles(toolPath: String, version: String, token: String = null) = {
+      val builder = http("Get NFL files")
         .get(s"/api/ga4gh/v2/tools/${toolPath}/versions/${version}/NFL/files")
+      if (token != null && !token.isEmpty) builder.headers(authHeader(token)) else builder
     }
 
-    def getWdlFiles(toolPath: String, version: String) = {
-      http("Get WDL files")
+    def getWdlFiles(toolPath: String, version: String, token: String = null) = {
+      val builder = http("Get WDL files")
         .get(s"/api/ga4gh/v2/tools/${toolPath}/versions/${version}/WDL/files")
+      if (token != null && !token.isEmpty) builder.headers(authHeader(token)) else builder
     }
 
-    def getCwlFiles(toolPath: String, version: String) = {
-      http("Get CWL files")
+    def getCwlFiles(toolPath: String, version: String, token: String = null) = {
+      val builder = http("Get CWL files")
         .get(s"/api/ga4gh/v2/tools/${toolPath}/versions/${version}/CWL/files")
+      if (token != null && !token.isEmpty) builder.headers(authHeader(token)) else builder
     }
 
     def getMetadata = {
