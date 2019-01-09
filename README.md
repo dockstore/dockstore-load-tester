@@ -11,34 +11,31 @@ Dockstore Load/Performance/Stress Tester
 
 For authenticated endpoints, the tests use tokens that come from the file `data/dummyUsersAndTokens.csv`.
 Those users and tokens need to be in the Dockstore database. A SQL file, `dummyusers.sql`, will create
-the users and tokens. Direct access to the Dockstore database is required.
+the users and tokens. Direct access to the Dockstore database is required. Assuming Postgres is running in a Docker
+container named `postgres1`, execute the following:
 
 ```
 docker exec -i postgres1 psql webservice_test -U postgres < dummyusers.sql
 ```
 
 Note: the `dummyusers.sql` was generated from `data/dummyUsersAndTokens.csv` 
-by `src/test/scala/io/dockstore/tools/UserGenerator.scala`; if you need to tweak the SQL it would be
-best to modify the generator.
-
-#### Endpoints
-
-`io.dockstore.HttpProtocols` has various Dockstore endpoints defined.
+by `src/test/scala/io/dockstore/tools/UserGenerator.scala`; if you need to tweak the SQL you
+should modify the generator.
 
 ### Run
 
-You can configure the following properties with `-D`, e.g., `-Dusers=50`:
+You can configure the following properties with `-D`, e.g., `-DauthUsers=50`. Defaults are in the `pom.xml`.
 
-* authUsers -- the number of authenticated users to simulate; defaults to 10
-* anonUsers -- the number of anonymous users to simulate; defaults to 10
-* atOnce -- true if all users should hit at once, or if they should ramp up over time; defaults to true
-* rampMinutes -- if `atOnce` is not true, the number of minutes the specified number of users will be phased in
+* authUsers -- the number of authenticated users to simulate; defaults to 50
+* anonUsers -- the number of anonymous users to simulate; defaults to 50; only applies if scenario, below, is `Everything`
+* atOnce -- true if all users should hit at once, or if they should ramp up over time; defaults to false
+* rampMinutes -- if `atOnce` is not true, the number of minutes the specified number of users will be phased in; defaults to 5
 * baseUrl -- the Dockstore webservice endpoint to run the tests against; defaults to `http://localhost:8080`
 * scenario -- the name of the scenario to run; see DockstoreWebUser.scala for all available; defaults to `Everything`, which runs (almost) everything
-* maxResponseTimeMs -- if any API call takes longer than this, simulation will fail; default is 10,000, which is probably too low
+* maxResponseTimeMs -- if any API call takes longer than this, simulation will fail; default is 10,000, which is probably too high
 * successThreshold -- the precentage of calls that should pass; if less, the simulation fails; default is 95
 
-Regarding the last two items, the tests will still run to completion; there will a message at the end saying the tests failed.
+Regarding the last two items, the tests will still run to completion; if there is failure, there will a message so indicating at the end.
 
 The default values are defined in the `<properties>` section of the pom.xml.
 
@@ -61,7 +58,7 @@ format.
 
 The GitHub release has a gatling-report-3.0 JAR that you can use to compare different runs.
 
-```java
+```bash
 java -jar gatling-report-3.0-SNAPSHOT-capsule-fat.jar target/gatling/dockstorewebuser-20181109062654032/simulation.log \
     target/gatling/dockstorewebuser-20181113210759185/simulation.log \
     -o newdirectory
