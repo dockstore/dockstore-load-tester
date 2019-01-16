@@ -111,7 +111,8 @@
                     <jvmArgs>
                         <jvmArg>-DatOnce=${atOnce}</jvmArg>
                         <jvmArg>-DbaseUrl=${baseUrl}</jvmArg>
-                        <jvmArg>-Dusers=${users}</jvmArg>
+                        <jvmArg>-DauthUsers=${authUsers}</jvmArg>
+                        <jvmArg>-DanonUsers=${anonUsers}</jvmArg>
                         <jvmArg>-DrampMinutes=${rampMinutes}</jvmArg>
                         <jvmArg>-Dscenario=${scenario}</jvmArg>
                     </jvmArgs>
