@@ -2,7 +2,6 @@ package io.dockstore
 
 import io.gatling.core.Predef._
 import io.gatling.core.structure.ScenarioBuilder
-import io.gatling.http.protocol.HttpProtocolBuilder
 
 import scala.concurrent.duration._
 
@@ -80,7 +79,7 @@ class DockstoreWebUser extends Simulation {
     val defaultMaxResponseTimeMs  = (10 seconds).toMillis.toInt
 
     val authUsers = Integer.getInteger("authUsers", 20)
-    val anonUsers = Integer.getInteger("anonUsers", 20);
+    val anonUsers = if (sb.name.equals(everythingScenario)) Integer.getInteger("anonUsers", 20) else new Integer(0)
     val rampMinutes = Integer.getInteger("rampMinutes", 5)
     val baseUrl = System.getProperty("baseUrl", "http://localhost:8080")
     val atOnce = "true".equals(System.getProperty("atOnce"))
@@ -91,7 +90,7 @@ class DockstoreWebUser extends Simulation {
 
     print(s"Executing for ${authUsers} authorized users and ${anonUsers} anonymous users, ")
     if (atOnce) print("all at once, ") else println(s"over ${rampMinutes} minutes, ")
-    print(s"against ${baseUrl}.")
+    print(s"against ${baseUrl}, for scenario ${sb.name}")
     println()
 
     def setupScenario = {
