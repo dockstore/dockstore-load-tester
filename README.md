@@ -33,7 +33,8 @@ You can configure the following properties with `-D`, e.g., `-DauthUsers=50`. De
 * baseUrl -- the Dockstore webservice endpoint to run the tests against; defaults to `http://localhost:8080`
 * scenario -- the name of the scenario to run; see DockstoreWebUser.scala for all available; defaults to `Everything`, which runs (almost) everything
 * maxResponseTimeMs -- if any API call takes longer than this, simulation will fail; default is 10,000, which is probably too high
-* successThreshold -- the precentage of calls that should pass; if less, the simulation fails; default is 95
+* successThreshold -- the percentage of calls that should pass; if less, the simulation fails; default is 95
+* percentToPublish -- the percentage of workflows created in the `HostedWorkflowCrud` scenario that will be published; the default is 25
 
 Regarding the last two items, the tests will still run to completion; if there is failure, there will a message so indicating at the end.
 

@@ -21,6 +21,8 @@ object CreateAndUpdateHostedWorkflow {
 
     val randomComments = "randomComments" // The Pebble variable in HostedWdlWorkflow.json
 
+    val percentToPublish: Double = System.getProperty("percentToPublish", "25").toDouble / 100
+
     feed(workflowNameFeeder)
       .exec(Workflow.createHosted("${workflowName}", "${token}", "wdl")
         .check(status in(200, 201)) // Should be 201, but https://github.com/ga4gh/dockstore/issues/1859
@@ -36,5 +38,12 @@ object CreateAndUpdateHostedWorkflow {
       // Save another revision
       .exec(Workflow.addFileToHostedWorkflow("${id}", "${token}", "bodies/hosted/HostedWdlWorkflow.json")
       .check(status is 200))
+
+      .doIf(s => math.random < percentToPublish) {
+
+        exec(session => session.set("publish", "true"))
+
+          .exec(Workflow.publishOrUnpublish("${id}", "${token}"))
+      }
   }
 }

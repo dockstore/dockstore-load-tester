@@ -22,7 +22,7 @@ object HostedWorkflows {
       .exec(
         Workflow.getWorkflow("${id}", "${token}")
           .check(status is 200)
-          .check(jsonPath("$.is_published").transform(p => p == false).saveAs("publish"))
+          .check(jsonPath("$.is_published").transform(p => {p == "false"}).saveAs("publish"))
       )
 
       .exec(
