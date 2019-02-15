@@ -37,6 +37,7 @@ class DockstoreWebUser extends Simulation {
     scenario("ToolsAndWorkflowsSearch").exec(ToolsPageSearch.search, WorkflowsPageSearch.search),
     scenario("ToolsSearch").exec(ToolsPageSearch.search),
     scenario("WorkflowsSearch").feed(tokenFeeder).exec(WorkflowsPageSearch.search),
+    scenario("NoDbApis").exec(NoDbApis.simple),
 
     scenario(everythingScenario).feed(tokenFeeder).exec(
       HomePage.open,

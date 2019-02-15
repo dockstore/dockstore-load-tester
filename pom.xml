@@ -109,6 +109,7 @@
                 <artifactId>gatling-maven-plugin</artifactId>
                 <version>${gatling-plugin.version}</version>
                 <configuration>
+                    <runDescription>${authUsers} auth users, ${anonUsers} anon users, ramp minutes ${rampMinutes}, scenario ${scenario}, atOnce ${atOnce}</runDescription>
                     <jvmArgs>
                         <jvmArg>-DatOnce=${atOnce}</jvmArg>
                         <jvmArg>-DbaseUrl=${baseUrl}</jvmArg>
