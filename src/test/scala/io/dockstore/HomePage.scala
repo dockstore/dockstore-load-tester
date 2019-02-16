@@ -1,6 +1,6 @@
 package io.dockstore
 
-import io.dockstore.Requests.{Container, Ga4gh2}
+import io.dockstore.Requests.{Container, Ga4gh2, MetaData}
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import io.gatling.jdbc.Predef._
@@ -20,6 +20,10 @@ object HomePage {
 
     .exec(
       Container.getPublishedContainers()
-      .check(status is 200)
+      .check(status is 200))
+
+    .exec(
+      MetaData.getRss
+        .check(status is 200)
     )
 }
