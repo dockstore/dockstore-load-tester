@@ -31,12 +31,12 @@ object Requests {
 
   object Ga4gh {
     def getTools = {
-      http("Get tools")
+      http("GA4GHv1 Tools GET")
         .get("/api/ga4gh/v1/tools")
     }
 
     def getTool(id: String) = {
-      http("Get tool")
+      http("GA4GHv1 Tool GET")
         .get(s"/api/ga4gh/v1/tools/${id}")
     }
 
@@ -373,6 +373,7 @@ object Requests {
     def getSitemap = {
       http("Get sitemap")
         .get("/metadata/sitemap")
+        .header("Accept", "text/html")
     }
 
     def getRunnerDependencies = {

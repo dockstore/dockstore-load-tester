@@ -39,6 +39,7 @@ class DockstoreWebUser extends Simulation {
     scenario("WorkflowsSearch").feed(tokenFeeder).exec(WorkflowsPageSearch.search),
     scenario("NoDbApis").exec(NoDbApis.simple),
     scenario("TRS").exec(TRS.searchAndDrillDown),
+    scenario("Metadata").exec(Metadata.go),
 
     scenario(everythingScenario).feed(tokenFeeder).exec(
       HomePage.open,
@@ -57,7 +58,8 @@ class DockstoreWebUser extends Simulation {
       ToolsPageSearch.search,
       WorkflowsPageSearch.search,
       SearchPage.search,
-      TRS.searchAndDrillDown
+      TRS.searchAndDrillDown,
+      Metadata.go
     )
 
   )
