@@ -31,12 +31,12 @@ object Requests {
 
   object Ga4gh {
     def getTools = {
-      http("Get tools")
+      http("GA4GHv1 Tools GET")
         .get("/api/ga4gh/v1/tools")
     }
 
     def getTool(id: String) = {
-      http("Get tool")
+      http("GA4GHv1 Tool GET")
         .get(s"/api/ga4gh/v1/tools/${id}")
     }
 
@@ -90,6 +90,16 @@ object Requests {
     def getMetadata = {
       http("Get metatdata")
         .get("/api/ga4gh/v2/metadata")
+    }
+
+    def getTools = {
+      http("GA4GHv2 Tools GET")
+        .get("/api/ga4gh/v2/tools")
+    }
+
+    def getTool(id: String) = {
+      http("GA4GHv2 Tool GET")
+        .get(s"/api/ga4gh/v2/tools/${id}")
     }
 
     /*
@@ -347,6 +357,7 @@ object Requests {
     def getRss = {
       http("Get RSS")
         .get("/metadata/rss")
+        .headers(Map("Accept" -> "text/xml"))
     }
 
     def getDescriptorLanguageList = {
@@ -362,6 +373,7 @@ object Requests {
     def getSitemap = {
       http("Get sitemap")
         .get("/metadata/sitemap")
+        .header("Accept", "text/html")
     }
 
     def getRunnerDependencies = {
