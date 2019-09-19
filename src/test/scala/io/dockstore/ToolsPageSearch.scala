@@ -31,7 +31,7 @@ object ToolsPageSearch {
       .check(jsonPath("$[*].id").findRandom.saveAs("id"))
       .check(jsonPath("$[?(@.id == ${id})].tool_path").transform(toolPath => Utils.encode(toolPath)) saveAs ("tool_path"))
       .check(jsonPath("$[?(@.id == ${id})].defaultVersion").saveAs ("version"))
-      .check(jsonPath("$[?(@.id == ${id})].tags[0]").saveAs("firstVersion")) // This doesn't handle no tags case
+      .check(jsonPath("$[?(@.id == ${id})].workflowVersions[0]").saveAs("firstVersion")) // This doesn't handle no tags case
     )
     .pause(1)
 

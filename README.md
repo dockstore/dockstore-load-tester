@@ -84,6 +84,8 @@ the gatling_3_0_support branch, run `mvn clean package`, and use the generated J
 Figuring JSON paths can be tricky. I find [this site](http://jsonpath.herokuapp.com/) useful in interactively figuring out the
 expression.
 
+For debugging, look at the file `logback-test.xml`. Here you can choose between printing the logs of only failed or all HTTP requests to the console.
+
 ## Todo
 
 1. Configurably set Gatling `.disableCaching` parameter.
