@@ -162,7 +162,7 @@ object Requests {
 
     def getSecondaryWdl(workflowId: String, version: String) = {
       http("Get secondary wdl")
-        .get(s"/workflows/${workflowId}/secondaryWdl?tag=${version}")
+        .get(s"/workflows/${workflowId}/secondaryDescriptors?tag=${version}&language=wdl")
 
     }
 
