@@ -57,7 +57,7 @@ object WorkflowsPageSearch {
           Ga4gh2.getWdlFiles("${fullWorkflowPath}", "${version}")
             .check(status in(200, 204))
         ))
-    .doIfEquals("${descriptorType}", "wdl") {
+    .doIfEquals("${descriptorType}", "WDL") {
       exec(
         Workflow.getSecondaryWdl("${id}", "${version}")
       )
