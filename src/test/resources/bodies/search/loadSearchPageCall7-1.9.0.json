@@ -1,0 +1,17 @@
+{
+  "size": 0,
+  "aggs": {
+    "autocomplete": {
+      "terms": {
+        "field": "description",
+        "size": 4,
+        "order": {
+          "_count": "desc"
+        },
+        "include": {
+          "pattern": ".*"
+        }
+      }
+    }
+  }
+}

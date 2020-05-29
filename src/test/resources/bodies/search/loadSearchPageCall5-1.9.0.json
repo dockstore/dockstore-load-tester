@@ -1,0 +1,144 @@
+{
+  "size": 201,
+  "_source": false,
+  "query": {
+    "match_all": {}
+  },
+  "aggs": {
+    "_type": {
+      "terms": {
+        "field": "_type",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "descriptorType": {
+      "terms": {
+        "field": "descriptorType",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "registry": {
+      "terms": {
+        "field": "registry",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "source_control_provider.keyword": {
+      "terms": {
+        "field": "source_control_provider.keyword",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "input_file_formats.value.keyword": {
+      "terms": {
+        "field": "input_file_formats.value.keyword",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "output_file_formats.value.keyword": {
+      "terms": {
+        "field": "output_file_formats.value.keyword",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "private_access": {
+      "terms": {
+        "field": "private_access",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "verified": {
+      "terms": {
+        "field": "verified",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "author": {
+      "terms": {
+        "field": "author",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "namespace": {
+      "terms": {
+        "field": "namespace",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "labels.value.keyword": {
+      "terms": {
+        "field": "labels.value.keyword",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "workflowVersions.verifiedSources.keyword": {
+      "terms": {
+        "field": "workflowVersions.verifiedSources.keyword",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "has_checker": {
+      "terms": {
+        "field": "has_checker",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "organization": {
+      "terms": {
+        "field": "organization",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "verified_platforms.keyword": {
+      "terms": {
+        "field": "verified_platforms.keyword",
+        "size": 10000,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    }
+  }
+}

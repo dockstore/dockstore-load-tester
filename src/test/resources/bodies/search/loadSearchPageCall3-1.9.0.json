@@ -1,0 +1,17 @@
+{
+  "size": 20,
+  "_source": false,
+  "query": {
+    "match": {
+      "_type": "tool"
+    }
+  },
+  "aggs": {
+    "tagcloud": {
+      "significant_terms": {
+        "field": "description",
+        "size": 20
+      }
+    }
+  }
+}

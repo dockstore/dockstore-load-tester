@@ -1,5 +1,7 @@
 package io.dockstore
 
+import io.dockstore
+import io.dockstore.release_1_9.{LoggedInHomepage, LoggedOutHomepage, Organizations, SearchPage}
 import io.gatling.core.Predef._
 import io.gatling.core.structure.ScenarioBuilder
 
@@ -25,6 +27,10 @@ class DockstoreWebUser extends Simulation {
 
   private val anonymousUsersScenario = "AnonymousUsers"
 
+  private val loggedInUserFlow_1_9 = "LoggedIn_1.9"
+
+  private val loggedOutUserFlow_1_9 = "LoggedOut_1_9"
+
   val scenarios = Array(
     scenario("Account").feed(tokenFeeder).exec(Accounts.accountsPage),
     scenario("Home").exec(HomePage.open),
@@ -40,6 +46,10 @@ class DockstoreWebUser extends Simulation {
     scenario("NoDbApis").exec(NoDbApis.simple),
     scenario("TRS").exec(TRS.searchAndDrillDown),
     scenario("Metadata").exec(Metadata.go),
+    scenario("LoggedOutHomePage1.9.0").exec(LoggedOutHomepage.loggedOutHomepage),
+    scenario("LoggedInHomePage1.9.0").feed(tokenFeeder).exec(LoggedInHomepage.loggedInHomepage),
+    scenario("Organizations1.9.0").feed(tokenFeeder).exec(Organizations.organizations),
+    scenario("SearchPage1.9.0").exec(io.dockstore.release_1_9.SearchPage.search),
 
     scenario(everythingScenario).feed(tokenFeeder).exec(
       HomePage.open,
@@ -60,8 +70,31 @@ class DockstoreWebUser extends Simulation {
       SearchPage.search,
       TRS.searchAndDrillDown,
       Metadata.go
-    )
+    ),
 
+    scenario(loggedInUserFlow_1_9).feed(tokenFeeder).exec(
+      LoggedInHomepage.loggedInHomepage,
+      Accounts.accountsPage,
+      io.dockstore.release_1_9.SearchPage.search,
+      Organizations.organizations,
+      CreateAndUpdateHostedWorkflow.create,
+      HostedWorkflows.fetchRandomAndTogglePublish,
+      MyWorkflows.myWorkflows,
+      StarredToolsAndWorkflows.page
+    ),
+
+    scenario(loggedOutUserFlow_1_9).exec(
+      LoggedOutHomepage.loggedOutHomepage,
+      io.dockstore.release_1_9.SearchPage.search,
+      TRS.searchAndDrillDown,
+      Metadata.go
+    ),
+
+    scenario("jamboree").feed(tokenFeeder).exec(
+      LoggedInHomepage.loggedInHomepage,
+      io.dockstore.release_1_9.SearchPage.search,
+      Organizations.organizations,
+    )
   )
 
   private def getAnonymousScenario = {
