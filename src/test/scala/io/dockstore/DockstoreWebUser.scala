@@ -91,7 +91,7 @@ class DockstoreWebUser extends Simulation {
     ),
 
     scenario("jamboree").feed(tokenFeeder).exec(
-      LoggedInHomepage.loggedInHomepage,
+      LoggedOutHomepage.loggedOutHomepage,
       io.dockstore.release_1_9.SearchPage.search,
       Organizations.organizations,
     )

@@ -41,10 +41,6 @@ object LoggedInHomepage {
       .check(status is 200)
   )
       .exec(
-    Event.getEvents("${token}")
-      .check(status is 200)
-  )
-      .exec(
     User.getUserEntries("${token}")
       .check(status is 200)
   )

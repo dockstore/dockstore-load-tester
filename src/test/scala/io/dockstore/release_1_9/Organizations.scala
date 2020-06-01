@@ -16,10 +16,10 @@ object Organizations {
   val organizationList = Array("BroadInstitute", "PCAWG")
   val broadInstituteCollections = Array("GATKWorkflows", "pgs")
   val pcawgCollections = Array("PCAWG")
-  var orgName = "BroadInstitute"
+  val orgName = "BroadInstitute"
 
-  var orgId = 16
-  var collectionName = "GATKWorkflows"
+  val orgId = 16
+  val collectionName = "GATKWorkflows"
 
   val organizations =
     exec(
