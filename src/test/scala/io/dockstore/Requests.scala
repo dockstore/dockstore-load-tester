@@ -475,6 +475,42 @@ object Requests {
         .headers(authHeader(token))
     }
 
+    def getUserEntries(token: String) = {
+      http("Get all of the entries for a user, sorted by most recently updated.")
+        .get("/users/users/entries")
+        .queryParam("count", 10)
+        .headers(authHeader(token))
+    }
+
+    def getFilteredUserEntries(token: String, filter: String) = {
+      http("Get all of the entries for a user, sorted by most recently updated.")
+        .get("/users/users/entries")
+        .queryParam("count", 10)
+        .queryParam("filter", filter)
+        .headers(authHeader(token))
+    }
+
+    def getUserDockstoreOrganizations(token: String) = {
+      http("Get all of the Dockstore organizations for a user, sorted by most recently updated.")
+        .get("/users/users/organizations")
+        .queryParam("count", 10)
+        .headers(authHeader(token))
+    }
+
+    def getFilteredUserDockstoreOrganizations(token: String, filter: String) = {
+      http("Get all of the Dockstore organizations for a user, sorted by most recently updated.")
+        .get("/users/users/organizations")
+        .queryParam("count", 10)
+        .queryParam("filter", filter)
+        .headers(authHeader(token))
+    }
+
+    def getUserDockstoreMemberships(token: String) = {
+      http("Get the logged-in user's memberships.")
+        .get("/users/user/memberships")
+        .headers(authHeader(token))
+    }
+
     /*
         "/users/updateUserMetadata": {
     "/users/{userId}": {
@@ -492,6 +528,78 @@ object Requests {
     "/users/user/updateUserMetadata": {
 
      */
+  }
+
+  object Organization {
+    def getApprovedOrganizations() = {
+      http("Get list of approved organizations")
+        .get("/organizations")
+    }
+
+    def getOrganizationByName(name: String, token: String) = {
+      http("Retrieve an organization by name")
+        .get(s"/organizations/name/${name}")
+        .headers(authHeader(token))
+    }
+
+    def getOrganizationById(orgId: Long, token: String) = {
+      http("Retrieve an organization by ID")
+        .get(s"/organizations/${orgId}")
+        .headers(authHeader(token))
+    }
+
+    def getOrganizationMembers(orgId: Long, token: String) = {
+      http("Retrieve all members for an organization.")
+        .get(s"/organizations/${orgId}/members")
+        .headers(authHeader(token))
+    }
+
+    def getCollectionsFromOrganization(orgId: Long, token: String) = {
+      http("Retrieve all collections for an organization.")
+        .get(s"/organizations/${orgId}/collections")
+        .headers(authHeader(token))
+    }
+
+    def getOrganizationEvents(orgId: Long, token: String) = {
+      http("getOrganizationEvents")
+        .get(s"/organizations/${orgId}/events")
+        .queryParam("offset", 0)
+        .queryParam("limit",  30)
+        .headers(authHeader(token))
+    }
+
+    def getStarredUsersForApprovedOrganization(orgId: Long, token: String) = {
+      http("Return list of users who starred the given approved organization")
+        .get(s"/organizations/${orgId}/starredUsers")
+    }
+
+    def getCollectionByName(orgName: String, collectionName: String, token: String) = {
+      http("Retrieve a collection by name. Supports optional authentication.")
+        .get(s"/organizations/${orgName}/collections/${collectionName}/name")
+        .headers(authHeader(token))
+    }
+
+    def getAllOrganizations(token: String) = {
+      http("List all organizations, regardless of organization status. Admin/curator only.")
+        .get("/organizations/all")
+        .queryParam("type", "pending")
+    }
+  }
+
+  object Notification {
+    def getActiveNotifications() = {
+      http("Return all active notifications")
+        .get("/curation/notifications")
+    }
+  }
+
+  object Event {
+    def getEvents(token: String) = {
+      http("Get events based on filters.")
+        .get("/events")
+        .queryParam("event_search_type", "ALL_STARRED")
+        .headers(authHeader(token))
+    }
   }
 
 }

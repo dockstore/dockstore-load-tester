@@ -1,0 +1,92 @@
+{
+  "size": 201,
+  "_source": {
+    "excludes": [
+      "*.content",
+      "*.sourceFiles",
+      "description",
+      "users",
+      "workflowVersions.dirtyBit",
+      "workflowVersions.hidden",
+      "workflowVersions.last_modified",
+      "workflowVersions.name",
+      "workflowVersions.valid",
+      "workflowVersions.workflow_path",
+      "workflowVersions.workingDirectory",
+      "workflowVersions.reference"
+    ]
+  },
+  "query": {
+    "bool": {
+      "filter": {
+        "bool": {
+          "should": [
+            {
+              "bool": {
+                "filter": {
+                  "match_phrase": {
+                    "workflowVersions.sourceFiles.content": "${searchTerm}"
+                  }
+                }
+              }
+            },
+            {
+              "bool": {
+                "filter": {
+                  "match_phrase": {
+                    "tags.sourceFiles.content": "${searchTerm}"
+                  }
+                }
+              }
+            },
+            {
+              "bool": {
+                "filter": {
+                  "match_phrase": {
+                    "description": "${searchTerm}"
+                  }
+                }
+              }
+            },
+            {
+              "bool": {
+                "filter": {
+                  "match_phrase": {
+                    "labels": "${searchTerm}"
+                  }
+                }
+              }
+            },
+            {
+              "bool": {
+                "filter": {
+                  "match_phrase": {
+                    "author": "${searchTerm}"
+                  }
+                }
+              }
+            },
+            {
+              "bool": {
+                "filter": {
+                  "match_phrase": {
+                    "tool_path": "${searchTerm}"
+                  }
+                }
+              }
+            },
+            {
+              "bool": {
+                "filter": {
+                  "match_phrase": {
+                    "full_workflow_path": "${searchTerm}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
