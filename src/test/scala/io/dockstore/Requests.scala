@@ -50,9 +50,9 @@ object Requests {
         .get(s"/api/ga4gh/v1/tools/${id}/versions/${version}")
     }
 
-    def getToolDescriptor(id: String, version: String) = {
+    def getToolDescriptor(id: String, version: String, descriptorType: String) = {
       http("Get tool version")
-        .get(s"/api/ga4gh/v1/tools/${id}/versions/${version}/descriptor")
+        .get(s"/api/ga4gh/v1/tools/${id}/versions/${version}/${descriptorType}/descriptor")
 
     }
 

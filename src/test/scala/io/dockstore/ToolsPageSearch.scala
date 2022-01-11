@@ -36,7 +36,7 @@ object ToolsPageSearch {
     .pause(1)
 
     .exec(session => {
-      val hasVersion = (session("version").validate[String] != TypeHelper.NullValueFailure)
+      val hasVersion = session("version").asOption[String].isDefined
       val newSession = if (hasVersion) session else session.set("version", session("firstVersion").as[String])
       newSession.set("version", Utils.encode(newSession("version").as[String]))
     })

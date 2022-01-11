@@ -6,6 +6,7 @@ import io.gatling.core.Predef._
 import io.gatling.core.structure.ScenarioBuilder
 
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 /**
   * Simulates a Dockstore Web User
@@ -30,6 +31,12 @@ class DockstoreWebUser extends Simulation {
   private val loggedInUserFlow_1_9 = "LoggedIn_1.9"
 
   private val loggedOutUserFlow_1_9 = "LoggedOut_1_9"
+
+  /**
+   * Based on 1.11 prod usage statistics
+   */
+  private val terraFetchingDescriptors = "TerraFetchingDescriptors"
+  private val terraWorkflowVersions = "TerraFetchingVersions"
 
   val scenarios = Array(
     scenario("Account").feed(tokenFeeder).exec(Accounts.accountsPage),
@@ -94,7 +101,16 @@ class DockstoreWebUser extends Simulation {
       LoggedOutHomepage.loggedOutHomepage,
       io.dockstore.release_1_9.SearchPage.search,
       Organizations.organizations,
+    ),
+
+    scenario(terraFetchingDescriptors).exec(
+      Terra.fetchDescriptor
+    ),
+
+    scenario(terraWorkflowVersions).exec(
+      Terra.fetchWorkflowVersions
     )
+
   )
 
   private def getAnonymousScenario = {
@@ -113,37 +129,48 @@ class DockstoreWebUser extends Simulation {
     maybeBuilder
   }
 
-  getScenario(System.getProperty("scenario", everythingScenario + "," + anonymousUsersScenario)).map(sb => {
-    val defaultMaxResponseTimeMs  = (10 seconds).toMillis.toInt
+  val defaultMaxResponseTimeMs  = (10 seconds).toMillis.toInt
+  val baseUrl = System.getProperty("baseUrl", "http://localhost:8080")
+  val atOnce = "true".equals(System.getProperty("atOnce"))
+  val maxResponseTimeMs = Integer.getInteger("maxResponseTimeMs", defaultMaxResponseTimeMs)
+  val successThreshold = Integer.getInteger("successThreshold", 95).doubleValue()
+  val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl).userAgentHeader("gatling")
+  setUp(
+    List(getScenario(terraFetchingDescriptors).map(sb => sb.inject(rampUsers(3000).during(2.minutes))).get,
+      getScenario(terraWorkflowVersions).map(sb => sb.inject(rampUsers(4).during(2.minutes))).get)
+  ).protocols(httpProtocolBuilder)
 
-    val authUsers = Integer.getInteger("authUsers", 20)
-    val anonUsers = if (sb.name.equals(everythingScenario)) Integer.getInteger("anonUsers", 20) else new Integer(0)
-    val rampMinutes = Integer.getInteger("rampMinutes", 5)
-    val baseUrl = System.getProperty("baseUrl", "http://localhost:8080")
-    val atOnce = "true".equals(System.getProperty("atOnce"))
-    val maxResponseTimeMs = Integer.getInteger("maxResponseTimeMs", defaultMaxResponseTimeMs)
-    val successThreshold = Integer.getInteger("successThreshold", 95).doubleValue()
-
-    val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl)
-
-    print(s"Executing for ${authUsers} authorized users and ${anonUsers} anonymous users, ")
-    if (atOnce) print("all at once, ") else println(s"over ${rampMinutes} minutes, ")
-    print(s"against ${baseUrl}, for scenario ${sb.name}")
-    println()
-
-    def setupScenario = {
-      val authUsersRate = if (atOnce) atOnceUsers(authUsers) else rampUsers(authUsers) during(rampMinutes minutes)
-      val anonUsersRate = if (atOnce) atOnceUsers(anonUsers) else rampUsers(anonUsers) during(rampMinutes minutes)
-      val authUsersBuilder = sb.inject(authUsersRate)
-      val anonUsersBuilder = getAnonymousScenario.inject(anonUsersRate);
-      val populationBuilders = if (sb.name equals(everythingScenario)) List(authUsersBuilder, anonUsersBuilder) else List(authUsersBuilder)
-      setUp(populationBuilders).protocols(httpProtocolBuilder)
-    }
-
-    setupScenario.assertions(
-      global.successfulRequests.percent.gt(successThreshold),
-      global.responseTime.max.lt(maxResponseTimeMs) // milliseconds
-    )
-  })
+//  getScenario(System.getProperty("scenario", everythingScenario + "," + anonymousUsersScenario)).map(sb => {
+//    val defaultMaxResponseTimeMs  = (10 seconds).toMillis.toInt
+//
+//    val authUsers = Integer.getInteger("authUsers", 20)
+//    val anonUsers = if (sb.name.equals(everythingScenario)) Integer.getInteger("anonUsers", 20) else new Integer(0)
+//    val rampMinutes = Integer.getInteger("rampMinutes", 5)
+//    val baseUrl = System.getProperty("baseUrl", "http://localhost:8080")
+//    val atOnce = "true".equals(System.getProperty("atOnce"))
+//    val maxResponseTimeMs = Integer.getInteger("maxResponseTimeMs", defaultMaxResponseTimeMs)
+//    val successThreshold = Integer.getInteger("successThreshold", 95).doubleValue()
+//
+//    val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl)
+//
+//    print(s"Executing for ${authUsers} authorized users and ${anonUsers} anonymous users, ")
+//    if (atOnce) print("all at once, ") else println(s"over ${rampMinutes} minutes, ")
+//    print(s"against ${baseUrl}, for scenario ${sb.name}")
+//    println()
+//
+//    def setupScenario = {
+//      val authUsersRate = if (atOnce) atOnceUsers(authUsers) else rampUsers(authUsers) during(rampMinutes minutes)
+//      val anonUsersRate = if (atOnce) atOnceUsers(anonUsers) else rampUsers(anonUsers) during(rampMinutes minutes)
+//      val authUsersBuilder = sb.inject(authUsersRate)
+//      val anonUsersBuilder = getAnonymousScenario.inject(anonUsersRate);
+//      val populationBuilders = if (sb.name equals(everythingScenario)) List(authUsersBuilder, anonUsersBuilder) else List(authUsersBuilder)
+//      setUp(populationBuilders).protocols(httpProtocolBuilder)
+//    }
+//
+//    setupScenario.assertions(
+//      global.successfulRequests.percent.gt(successThreshold),
+//      global.responseTime.max.lt(maxResponseTimeMs) // milliseconds
+//    )
+//  })
 
 }
