@@ -10,7 +10,7 @@ import io.gatling.http.Predef._
   */
 object SearchPage {
 
-  private val searchPath = "/api/ga4gh/v2/extended/tools/entry/_search"
+  private val searchPath = "/api/api/ga4gh/v2/extended/tools/entry/_search"
 
   val search = {
     val r = scala.util.Random

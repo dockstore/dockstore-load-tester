@@ -1,9 +1,8 @@
 package io.dockstore
 
-import io.dockstore.Requests.{Container, Ga4gh2, MetaData}
+import io.dockstore.Requests.{Categories, Container, Curation, Ga4gh2, MetaData}
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import io.gatling.jdbc.Predef._
 
 /**
   * Makes the API calls of a user going to the home page
@@ -14,16 +13,17 @@ import io.gatling.jdbc.Predef._
   */
 object HomePage {
 
-  val open = exec(
-    Ga4gh2.getMetadata
-    .check(status is 200))
-
-    .exec(
-      Container.getPublishedContainers()
-      .check(status is 200))
-
-    .exec(
-      MetaData.getRss
+  val loggedOutHomePage = exec(
+    http("Logged-out Home page")
+        .get("/")
+        .headers(Map("Accept" -> "text/html"))
         .check(status is 200)
-    )
+        .resources(
+          Ga4gh2.getMetadata.check(status is 200),
+          MetaData.getConfigJson.check(status is 200),
+          Curation.getNotifications.check(status is 200),
+          // 1.12 only
+          Categories.getCategories.check(status is 200)
+        )
+  )
 }

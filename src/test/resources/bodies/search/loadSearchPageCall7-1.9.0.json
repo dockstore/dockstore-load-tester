@@ -8,9 +8,7 @@
         "order": {
           "_count": "desc"
         },
-        "include": {
-          "pattern": ".*"
-        }
+        "include": ".*"
       }
     }
   }

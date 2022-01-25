@@ -38,9 +38,21 @@ class DockstoreWebUser extends Simulation {
   private val terraFetchingDescriptors = "TerraFetchingDescriptors"
   private val terraWorkflowVersions = "TerraFetchingVersions"
 
+  private val terraDescriptorScenario: ScenarioBuilder = scenario(terraFetchingDescriptors).exec(
+    Terra.fetchDescriptor
+  )
+  private val terraVersionsScenario: ScenarioBuilder = scenario(terraWorkflowVersions).exec(
+    Terra.fetchWorkflowVersions
+  )
+  private val loggedOutHomePageScenario: ScenarioBuilder = scenario("Home").exec(HomePage.loggedOutHomePage)
+  private val jamboreeScenario: ScenarioBuilder = scenario("jamboree").exec(
+    LoggedOutHomepage.loggedOutHomepage,
+    io.dockstore.release_1_9.SearchPage.search,
+    Organizations.organizations,
+  )
   val scenarios = Array(
     scenario("Account").feed(tokenFeeder).exec(Accounts.accountsPage),
-    scenario("Home").exec(HomePage.open),
+    loggedOutHomePageScenario,
     scenario("HostedToolCrud").feed(tokenFeeder).exec(CreateAndUpdateHostedTool.create),
     scenario("HostedWorkflowCrud").feed(tokenFeeder).exec(CreateAndUpdateHostedWorkflow.create),
     scenario("MyWorkflows").feed(tokenFeeder).exec(MyWorkflows.myWorkflows),
@@ -59,7 +71,7 @@ class DockstoreWebUser extends Simulation {
     scenario("SearchPage1.9.0").exec(io.dockstore.release_1_9.SearchPage.search),
 
     scenario(everythingScenario).feed(tokenFeeder).exec(
-      HomePage.open,
+      HomePage.loggedOutHomePage,
       Accounts.accountsPage,
       ToolsPageSearch.search,
       WorkflowsPageSearch.search,
@@ -71,7 +83,7 @@ class DockstoreWebUser extends Simulation {
     ),
 
     scenario(anonymousUsersScenario).exec(
-      HomePage.open,
+      HomePage.loggedOutHomePage,
       ToolsPageSearch.search,
       WorkflowsPageSearch.search,
       SearchPage.search,
@@ -97,19 +109,9 @@ class DockstoreWebUser extends Simulation {
       Metadata.go
     ),
 
-    scenario("jamboree").feed(tokenFeeder).exec(
-      LoggedOutHomepage.loggedOutHomepage,
-      io.dockstore.release_1_9.SearchPage.search,
-      Organizations.organizations,
-    ),
-
-    scenario(terraFetchingDescriptors).exec(
-      Terra.fetchDescriptor
-    ),
-
-    scenario(terraWorkflowVersions).exec(
-      Terra.fetchWorkflowVersions
-    )
+    jamboreeScenario,
+    terraDescriptorScenario,
+    terraVersionsScenario,
 
   )
 
@@ -130,14 +132,16 @@ class DockstoreWebUser extends Simulation {
   }
 
   val defaultMaxResponseTimeMs  = (10 seconds).toMillis.toInt
-  val baseUrl = System.getProperty("baseUrl", "http://localhost:8080")
+  val baseUrl = System.getProperty("baseUrl", "http://localhost:4200")
   val atOnce = "true".equals(System.getProperty("atOnce"))
   val maxResponseTimeMs = Integer.getInteger("maxResponseTimeMs", defaultMaxResponseTimeMs)
   val successThreshold = Integer.getInteger("successThreshold", 95).doubleValue()
   val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl).userAgentHeader("gatling")
   setUp(
-    List(getScenario(terraFetchingDescriptors).map(sb => sb.inject(rampUsers(3000).during(2.minutes))).get,
-      getScenario(terraWorkflowVersions).map(sb => sb.inject(rampUsers(4).during(2.minutes))).get)
+    List(terraDescriptorScenario.inject(rampUsers(20).during(1.minutes)),
+      terraVersionsScenario.inject(rampUsers(4).during(1.minutes)),
+      jamboreeScenario.inject(rampUsers(4).during(1 minutes))
+    )
   ).protocols(httpProtocolBuilder)
 
 //  getScenario(System.getProperty("scenario", everythingScenario + "," + anonymousUsersScenario)).map(sb => {

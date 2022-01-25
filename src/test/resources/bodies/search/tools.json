@@ -3,12 +3,12 @@
  "_source": false,
  "query": {
   "match": {
-   "_type": "tool"
+   "_index": "workflows"
   }
  },
  "aggs": {
   "tagcloud": {
-   "significant_terms": {
+   "significant_text": {
     "field": "description",
     "size": 20
    }

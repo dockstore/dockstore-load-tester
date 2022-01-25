@@ -4,12 +4,10 @@
     "autocomplete": {
       "terms": {
         "field": "description",
+        "include": "${searchTerm}.*",
         "size": 4,
         "order": {
           "_count": "desc"
-        },
-        "include": {
-          "pattern": "${searchTerm}.*"
         }
       }
     }

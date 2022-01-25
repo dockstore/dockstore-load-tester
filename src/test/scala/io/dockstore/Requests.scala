@@ -26,80 +26,81 @@ import io.gatling.http.Predef._
 object Requests {
 
   private def authHeader(token: String) = {
-    Map("Authorization" -> s"Bearer ${token}")
+    if (token == "") Map()
+    else Map("Authorization" -> s"Bearer ${token}")
   }
 
   object Ga4gh {
     def getTools = {
       http("GA4GHv1 Tools GET")
-        .get("/api/ga4gh/v1/tools")
+        .get("/api/api/ga4gh/v1/tools")
     }
 
     def getTool(id: String) = {
       http("GA4GHv1 Tool GET")
-        .get(s"/api/ga4gh/v1/tools/${id}")
+        .get(s"/api/api/ga4gh/v1/tools/${id}")
     }
 
     def getToolVersions(id: String) = {
       http("Get tool")
-        .get(s"/api/ga4gh/v1/tools/${id}/versions")
+        .get(s"/api/api/ga4gh/v1/tools/${id}/versions")
     }
 
     def getToolVersion(id: String, version: String) = {
       http("Get tool version")
-        .get(s"/api/ga4gh/v1/tools/${id}/versions/${version}")
+        .get(s"/api/api/ga4gh/v1/tools/${id}/versions/${version}")
     }
 
     def getToolDescriptor(id: String, version: String, descriptorType: String) = {
       http("Get tool version")
-        .get(s"/api/ga4gh/v1/tools/${id}/versions/${version}/${descriptorType}/descriptor")
+        .get(s"/api/api/ga4gh/v1/tools/${id}/versions/${version}/${descriptorType}/descriptor")
 
     }
 
     def getToolTests(id: String, version: String) = {
       http("Get tool version")
-        .get(s"/api/ga4gh/v1/tools/${id}/versions/${version}/tests")
+        .get(s"/api/api/ga4gh/v1/tools/${id}/versions/${version}/tests")
 
     }
 
     def getToolAddtionalDescriptor(id: String, version: String, relativePath: String) = {
       http("Get tool version")
-        .get(s"/api/ga4gh/v1/tools/${id}/versions/${version}/descriptor/${relativePath}")
+        .get(s"/api/api/ga4gh/v1/tools/${id}/versions/${version}/descriptor/${relativePath}")
     }
   }
 
   object Ga4gh2 {
     def getNflFiles(toolPath: String, version: String, token: String = null) = {
       val builder = http("Get NFL files")
-        .get(s"/api/ga4gh/v2/tools/${toolPath}/versions/${version}/NFL/files")
+        .get(s"/api/api/ga4gh/v2/tools/${toolPath}/versions/${version}/NFL/files")
       if (token != null && !token.isEmpty) builder.headers(authHeader(token)) else builder
     }
 
     def getWdlFiles(toolPath: String, version: String, token: String = null) = {
       val builder = http("Get WDL files")
-        .get(s"/api/ga4gh/v2/tools/${toolPath}/versions/${version}/WDL/files")
+        .get(s"/api/api/ga4gh/v2/tools/${toolPath}/versions/${version}/WDL/files")
       if (token != null && !token.isEmpty) builder.headers(authHeader(token)) else builder
     }
 
     def getCwlFiles(toolPath: String, version: String, token: String = null) = {
       val builder = http("Get CWL files")
-        .get(s"/api/ga4gh/v2/tools/${toolPath}/versions/${version}/CWL/files")
+        .get(s"/api/api/ga4gh/v2/tools/${toolPath}/versions/${version}/CWL/files")
       if (token != null && !token.isEmpty) builder.headers(authHeader(token)) else builder
     }
 
     def getMetadata = {
       http("Get metatdata")
-        .get("/api/ga4gh/v2/metadata")
+        .get("/api/api/ga4gh/v2/metadata")
     }
 
     def getTools = {
       http("GA4GHv2 Tools GET")
-        .get("/api/ga4gh/v2/tools")
+        .get("/api/api/ga4gh/v2/tools")
     }
 
     def getTool(id: String) = {
       http("GA4GHv2 Tool GET")
-        .get(s"/api/ga4gh/v2/tools/${id}")
+        .get(s"/api/api/ga4gh/v2/tools/${id}")
     }
 
     /*
@@ -129,17 +130,17 @@ object Requests {
   object Workflow {
     def getPublishedWorkflow(repo: String) = {
       http("Published Worfklow")
-        .get(s"/workflows/path/workflow/${repo}/published")
+        .get(s"/api/workflows/path/workflow/${repo}/published")
     }
 
     def getStarredUsers(workflowId: String) = {
       http("Get Workflow Starred Users")
-        .get(s"/workflows/${workflowId}/starredUsers")
+        .get(s"/api/workflows/${workflowId}/starredUsers")
     }
 
     def getPublished(filter: String = "") = {
       http("Get first 10 published workflows")
-        .get("/workflows/published")
+        .get("/api/workflows/published")
         .queryParam("offset", 0)
         .queryParam("limit", 10)
         .queryParam("filter", filter)
@@ -149,20 +150,20 @@ object Requests {
 
     def publishOrUnpublish(workflowId: String, token: String) = {
       http("Publish or Unpublish")
-        .post(s"/workflows/${workflowId}/publish")
+        .post(s"/api/workflows/${workflowId}/publish")
         .headers(authHeader(token))
         .body(ElFileBody("bodies/hosted/PublishBody.json")).asJson
     }
 
     def getWorkflow(workflowId: String, token: String) = {
       http("Get workflow")
-        .get(s"/workflows/${workflowId}")
+        .get(s"/api/workflows/${workflowId}")
         .headers(authHeader(token))
     }
 
     def getSecondaryWdl(workflowId: String, version: String) = {
       http("Get secondary wdl")
-        .get(s"/workflows/${workflowId}/secondaryDescriptors?tag=${version}&language=wdl")
+        .get(s"/api/workflows/${workflowId}/secondaryDescriptors?tag=${version}&language=wdl")
 
     }
 
@@ -176,7 +177,7 @@ object Requests {
 
     def addFileToHostedWorkflow(id: String, token: String, filename: String) = {
       http("Add file to Hosted Workflow")
-        .patch(s"/workflows/hostedEntry/${id}")
+        .patch(s"/api/workflows/hostedEntry/${id}")
         .headers(authHeader(token))
         .headers(Map("Content-type" -> "application/json"))
         .body(PebbleFileBody(filename))
@@ -184,45 +185,45 @@ object Requests {
 
     def downloadWorkflowAsZip(workflowId: String, version: String) = {
       http("Download Workflow Zip Bundle")
-        .get(s"/workflows/${workflowId}/zip/${version}")
+        .get(s"/api/workflows/${workflowId}/zip/${version}")
         .headers(Map("Accept" -> "application/zip"))
     }
 
     def getShared(token: String) = {
       http("Get shared workflows")
-        .get("/workflows/shared")
+        .get("/api/workflows/shared")
         .headers(authHeader(token))
     }
 
     def getTools(workflowId: String, workflowVersionId: String, token: String) = {
       http("Get Workflow Tools")
-        .get(s"/workflows/${workflowId}/tools/${workflowVersionId}")
+        .get(s"/api/workflows/${workflowId}/tools/${workflowVersionId}")
         .headers(authHeader(token))
     }
 
     def getDag(workflowId: String, workflowVersionId: String, token: String) = {
       http("Get Workflow Tools")
-        .get(s"/workflows/${workflowId}/dag/${workflowVersionId}")
+        .get(s"/api/workflows/${workflowId}/dag/${workflowVersionId}")
         .headers(authHeader(token))
     }
 
     def getStarredUsers(workflowId: String, token: String) = {
       http("Get workflow starred users")
-        .get("/workflows/{workflowId}/starredUsers")
+        .get("/api/workflows/{workflowId}/starredUsers")
         .headers(authHeader(token))
         .check(status is 200)
     }
 
     def star(workflowId: String, token: String) = {
       http("Star Workflow")
-        .put(s"/workflows/${workflowId}/star")
+        .put(s"/api/workflows/${workflowId}/star")
         .body(StringBody("""{ "star": "true" }""")).asJson
         .headers(authHeader(token))
     }
 
     def unstar(workflowId: String, token: String) = {
       http("Unstar Workflow")
-        .delete(s"/workflows/${workflowId}/unstar")
+        .delete(s"/api/workflows/${workflowId}/unstar")
         .headers(authHeader(token))
     }
 
@@ -272,7 +273,7 @@ object Requests {
   object Container {
     def getPublishedContainers(filter: String = "") = {
       http("Get first 10 published containers")
-        .get("/containers/published")
+        .get("/api/containers/published")
         .queryParam("offset", "0")
         .queryParam("limit", 10)
         .queryParam("filter", filter)
@@ -282,17 +283,17 @@ object Requests {
 
     def getPublishedContainer(toolPath: String) = {
       http("Get Published Tool")
-        .get(s"/containers/path/tool/${toolPath}/published")
+        .get(s"/api/containers/path/tool/${toolPath}/published")
     }
 
     def getContainerStarredUsers(containerId: String) = {
       http("Get Container Starred Users")
-        .get(s"/containers/${containerId}/starredUsers")
+        .get(s"/api/containers/${containerId}/starredUsers")
     }
 
     def getDockerfileByTag(id: String, tag: String) = {
       http("Get Dockerfile tag")
-        .get(s"/containers/${id}/dockerfile")
+        .get(s"/api/containers/${id}/dockerfile")
         .queryParam("tag", tag)
     }
 
@@ -308,7 +309,7 @@ object Requests {
 
     def addFileToHostedTool(id: String, token: String, filename: String) = {
       http("Add file to Hosted Tool")
-        .patch(s"/containers/hostedEntry/${id}")
+        .patch(s"/api/containers/hostedEntry/${id}")
         .headers(authHeader(token))
         .headers(Map("Content-type" -> "application/json"))
         .body(RawFileBody(filename))
@@ -356,135 +357,147 @@ object Requests {
   object MetaData {
     def getRss = {
       http("Get RSS")
-        .get("/metadata/rss")
+        .get("/api/metadata/rss")
         .headers(Map("Accept" -> "text/xml"))
     }
 
     def getDescriptorLanguageList = {
       http("Get Descriptor Language List")
-        .get("/metadata/descriptorLanguageList")
+        .get("/api/metadata/descriptorLanguageList")
     }
 
     def getDockerRegistryList = {
       http("Get Docker Registry List")
-        .get("/metadata/dockerRegistryList")
+        .get("/api/metadata/dockerRegistryList")
     }
 
     def getSitemap = {
       http("Get sitemap")
-        .get("/metadata/sitemap")
+        .get("/api/metadata/sitemap")
         .header("Accept", "text/html")
     }
 
     def getRunnerDependencies = {
       http("Get Runner Dependencies")
-        .get("/metadata/runner_dependencies")
+        .get("/api/metadata/runner_dependencies")
     }
 
     def getSourceControlList = {
       http("Get Source Control List")
-        .get("/metadata/sourceControlList")
+        .get("/api/metadata/sourceControlList")
     }
 
     def getOkHttpCachePerformance = {
       http("Get OK HTTP Cache Performance")
-        .get("/metadata/okHttpCachePerformance")
+        .get("/api/metadata/okHttpCachePerformance")
     }
+    def getConfigJson = {
+      http("config.json")
+          .get("/api/metadata/config.json")
+    }
+  }
+
+  object Curation {
+    def getNotifications = http("GET notifications").get("/api/curation/notifications")
+  }
+
+  object Categories {
+    def getCategories = http("GET Categories").get("/api/categories")
   }
 
   object User {
     def getUser(token: String) = http("Get User")
-      .get("/users/user")
+      .get("/api/users/user")
       .headers(authHeader(token))
 
     def getWorkflows(userId: String, token: String) = {
       http("Get user's workflows")
-        .get(s"/users/${userId}/workflows")
+        .get(s"/api/users/${userId}/workflows")
         .headers(authHeader(token))
     }
 
     def getPublishedWorkflows(userId: String, token: String) = {
       http("Get user's published workflows")
-        .get(s"/users/${userId}/workflows/published")
+        .get(s"/api/users/${userId}/workflows/published")
         .headers(authHeader(token))
     }
 
     def getContainers(userId: String, token: String) = {
       http("Get user's containers")
-        .get(s"/users/${userId}/containers")
+        .get(s"/api/users/${userId}/containers")
         .headers(authHeader(token))
     }
 
     def getPublishedContainers(userId: String, token: String) = {
       http("Get user's published containers")
-        .get(s"/users/${userId}/containers/published")
+        .get(s"/api/users/${userId}/containers/published")
         .headers(authHeader(token))
     }
 
     def getTokens(userId: String, token: String) = {
       http("Get user's tokens")
-        .get(s"/users/${userId}/tokens")
+        .get(s"/api/users/${userId}/tokens")
         .headers(authHeader(token))
     }
 
     def getExtended(userId: String, token: String) = {
       http("Get extended user info")
-        .get(s"/users/${userId}/extended")
+        .get(s"/api/users/${userId}/extended")
         .headers(authHeader(token))
     }
 
     def checkUsername(username: String, token: String) = {
       http("Check user")
-        .get(s"/users/username/${username}")
+        .get(s"/api/users/username/${username}")
         .headers(authHeader(token))
     }
 
     def refreshWorkflows(userId: String, token: String) = {
       http("Refresh user's workflows")
-        .get(s"/users/${userId}/workflows/refresh")
+        .get(s"/api/users/${userId}/workflows/refresh")
         .headers(authHeader(token))
     }
 
     def refreshOrgWorkflows(userId: String, organization: String, token: String) = {
       http("Refresh user's workflows")
-        .get(s"/users/${userId}/workflows/${organization}/refresh")
+        .get(s"/api/users/${userId}/workflows/${organization}/refresh")
         .headers(authHeader(token))
     }
 
     def getStarredWorkflows(token: String) = {
       http("Get Starred Workflows")
-        .get("/users/starredWorkflows")
+        .get("/api/users/starredWorkflows")
         .headers(authHeader(token))
     }
 
     def refreshContainers(userId: String, token: String) = {
       http("Refresh user's workflows")
-        .get(s"/users/${userId}/containers/refresh")
+        .get(s"/api/users/${userId}/containers/refresh")
         .headers(authHeader(token))
     }
 
     def refreshOrgContainers(userId: String, organization: String, token: String) = {
       http("Refresh user's workflows")
-        .get(s"/users/${userId}/containers/${organization}/refresh")
+        .get(s"/api/users/${userId}/containers/${organization}/refresh")
         .headers(authHeader(token))
     }
 
     def getStarredTools(token: String) = {
       http("Get Starred Tools")
-        .get("/users/starredTools")
+        .get("/api/users/starredTools")
         .headers(authHeader(token))
     }
 
     def getUserEntries(token: String) = {
       http("Get all of the entries for a user, sorted by most recently updated.")
-        .get("/users/users/entries")
+        .get("/api/users/users/entries")
         .queryParam("count", 10)
         .headers(authHeader(token))
     }
 
     def getFilteredUserEntries(token: String, filter: String) = {
       http("Get all of the entries for a user, sorted by most recently updated.")
-        .get("/users/users/entries")
+        .get("/api/users/users/entries")
         .queryParam("count", 10)
         .queryParam("filter", filter)
         .headers(authHeader(token))
@@ -492,14 +505,14 @@ object Requests {
 
     def getUserDockstoreOrganizations(token: String) = {
       http("Get all of the Dockstore organizations for a user, sorted by most recently updated.")
-        .get("/users/users/organizations")
+        .get("/api/users/users/organizations")
         .queryParam("count", 10)
         .headers(authHeader(token))
     }
 
     def getFilteredUserDockstoreOrganizations(token: String, filter: String) = {
       http("Get all of the Dockstore organizations for a user, sorted by most recently updated.")
-        .get("/users/users/organizations")
+        .get("/api/users/users/organizations")
         .queryParam("count", 10)
         .queryParam("filter", filter)
         .headers(authHeader(token))
@@ -507,7 +520,7 @@ object Requests {
 
     def getUserDockstoreMemberships(token: String) = {
       http("Get the logged-in user's memberships.")
-        .get("/users/user/memberships")
+        .get("/api/users/user/memberships")
         .headers(authHeader(token))
     }
 
@@ -533,55 +546,55 @@ object Requests {
   object Organization {
     def getApprovedOrganizations() = {
       http("Get list of approved organizations")
-        .get("/organizations")
+        .get("/api/organizations")
     }
 
-    def getOrganizationByName(name: String, token: String) = {
+    def getOrganizationByName(name: String, token: String = "") = {
       http("Retrieve an organization by name")
-        .get(s"/organizations/name/${name}")
+        .get(s"/api/organizations/name/${name}")
         .headers(authHeader(token))
     }
 
     def getOrganizationById(orgId: Long, token: String) = {
       http("Retrieve an organization by ID")
-        .get(s"/organizations/${orgId}")
+        .get(s"/api/organizations/${orgId}")
         .headers(authHeader(token))
     }
 
-    def getOrganizationMembers(orgId: Long, token: String) = {
+    def getOrganizationMembers(orgId: Long, token: String = "") = {
       http("Retrieve all members for an organization.")
-        .get(s"/organizations/${orgId}/members")
+        .get(s"/api/organizations/${orgId}/members")
         .headers(authHeader(token))
     }
 
-    def getCollectionsFromOrganization(orgId: Long, token: String) = {
+    def getCollectionsFromOrganization(orgId: Long, token: String = "") = {
       http("Retrieve all collections for an organization.")
-        .get(s"/organizations/${orgId}/collections")
+        .get(s"/api/organizations/${orgId}/collections")
         .headers(authHeader(token))
     }
 
-    def getOrganizationEvents(orgId: Long, token: String) = {
+    def getOrganizationEvents(orgId: Long, token: String = "") = {
       http("getOrganizationEvents")
-        .get(s"/organizations/${orgId}/events")
-        .queryParam("offset", 0)
-        .queryParam("limit",  30)
+        .get(s"/api/organizations/${orgId}/events")
+        .queryParam("offset", "0")
+        .queryParam("limit",  "30")
         .headers(authHeader(token))
     }
 
-    def getStarredUsersForApprovedOrganization(orgId: Long, token: String) = {
+    def getStarredUsersForApprovedOrganization(orgId: Long, token: String = "") = {
       http("Return list of users who starred the given approved organization")
-        .get(s"/organizations/${orgId}/starredUsers")
+        .get(s"/api/organizations/${orgId}/starredUsers")
     }
 
-    def getCollectionByName(orgName: String, collectionName: String, token: String) = {
+    def getCollectionByName(orgName: String, collectionName: String, token: String = "") = {
       http("Retrieve a collection by name. Supports optional authentication.")
-        .get(s"/organizations/${orgName}/collections/${collectionName}/name")
+        .get(s"/api/organizations/${orgName}/collections/${collectionName}/name")
         .headers(authHeader(token))
     }
 
     def getAllOrganizations(token: String) = {
       http("List all organizations, regardless of organization status. Admin/curator only.")
-        .get("/organizations/all")
+        .get("/api/organizations/all")
         .queryParam("type", "pending")
     }
   }
@@ -589,14 +602,14 @@ object Requests {
   object Notification {
     def getActiveNotifications() = {
       http("Return all active notifications")
-        .get("/curation/notifications")
+        .get("/api/curation/notifications")
     }
   }
 
   object Event {
     def getEvents(token: String) = {
       http("Get events based on filters.")
-        .get("/events")
+        .get("/api/events")
         .queryParam("event_search_type", "ALL_STARRED")
         .headers(authHeader(token))
     }

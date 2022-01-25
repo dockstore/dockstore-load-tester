@@ -16,7 +16,7 @@
         <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>
 
         <atOnce>false</atOnce>
-        <baseUrl>http://localhost:8080</baseUrl>
+        <baseUrl>http://localhost:4200</baseUrl>
         <authUsers>50</authUsers>
         <anonUsers>50</anonUsers>
         <rampMinutes>5</rampMinutes>
