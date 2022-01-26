@@ -22,15 +22,10 @@ import scala.language.postfixOps
   */
 class DockstoreWebUser extends Simulation {
 
-  private val tokenFeeder = csv("data/dummyUsersAndTokens.csv").random
+  private val workflowsFeeder = csv("data/workflows.csv").circular
 
-  private val everythingScenario = "Everything"
 
   private val anonymousUsersScenario = "AnonymousUsers"
-
-  private val loggedInUserFlow_1_9 = "LoggedIn_1.9"
-
-  private val loggedOutUserFlow_1_9 = "LoggedOut_1_9"
 
   /**
    * Based on 1.11 prod usage statistics
@@ -38,143 +33,60 @@ class DockstoreWebUser extends Simulation {
   private val terraFetchingDescriptors = "TerraFetchingDescriptors"
   private val terraWorkflowVersions = "TerraFetchingVersions"
 
-  private val terraDescriptorScenario: ScenarioBuilder = scenario(terraFetchingDescriptors).exec(
+  private val terraDescriptorScenario: ScenarioBuilder = scenario(terraFetchingDescriptors).feed(workflowsFeeder).exec(
     Terra.fetchDescriptor
   )
-  private val terraVersionsScenario: ScenarioBuilder = scenario(terraWorkflowVersions).exec(
+  private val terraVersionsScenario: ScenarioBuilder = scenario(terraWorkflowVersions).feed(workflowsFeeder).exec(
     Terra.fetchWorkflowVersions
   )
-  private val loggedOutHomePageScenario: ScenarioBuilder = scenario("Home").exec(HomePage.loggedOutHomePage)
   private val jamboreeScenario: ScenarioBuilder = scenario("jamboree").exec(
-    LoggedOutHomepage.loggedOutHomepage,
+    HomePage.loggedOutHomePage,
     io.dockstore.release_1_9.SearchPage.search,
     Organizations.organizations,
   )
+  private val trsScenario: ScenarioBuilder = scenario("TRS").exec(TRS.searchAndDrillDown)
+
   val scenarios = Array(
-    scenario("Account").feed(tokenFeeder).exec(Accounts.accountsPage),
-    loggedOutHomePageScenario,
-    scenario("HostedToolCrud").feed(tokenFeeder).exec(CreateAndUpdateHostedTool.create),
-    scenario("HostedWorkflowCrud").feed(tokenFeeder).exec(CreateAndUpdateHostedWorkflow.create),
-    scenario("MyWorkflows").feed(tokenFeeder).exec(MyWorkflows.myWorkflows),
-    scenario("PublishRandomHostedWorkflow").feed(tokenFeeder).exec(HostedWorkflows.fetchRandomAndTogglePublish),
-    scenario("SearchPage").exec(SearchPage.search),
-    scenario("Starred").feed(tokenFeeder).exec(StarredToolsAndWorkflows.page),
-    scenario("ToolsAndWorkflowsSearch").exec(ToolsPageSearch.search, WorkflowsPageSearch.search),
-    scenario("ToolsSearch").exec(ToolsPageSearch.search),
-    scenario("WorkflowsSearch").feed(tokenFeeder).exec(WorkflowsPageSearch.search),
-    scenario("NoDbApis").exec(NoDbApis.simple),
-    scenario("TRS").exec(TRS.searchAndDrillDown),
-    scenario("Metadata").exec(Metadata.go),
-    scenario("LoggedOutHomePage1.9.0").exec(LoggedOutHomepage.loggedOutHomepage),
-    scenario("LoggedInHomePage1.9.0").feed(tokenFeeder).exec(LoggedInHomepage.loggedInHomepage),
-    scenario("Organizations1.9.0").feed(tokenFeeder).exec(Organizations.organizations),
-    scenario("SearchPage1.9.0").exec(io.dockstore.release_1_9.SearchPage.search),
-
-    scenario(everythingScenario).feed(tokenFeeder).exec(
-      HomePage.loggedOutHomePage,
-      Accounts.accountsPage,
-      ToolsPageSearch.search,
-      WorkflowsPageSearch.search,
-      SearchPage.search,
-      CreateAndUpdateHostedWorkflow.create,
-      HostedWorkflows.fetchRandomAndTogglePublish,
-      MyWorkflows.myWorkflows,
-      StarredToolsAndWorkflows.page
-    ),
-
-    scenario(anonymousUsersScenario).exec(
-      HomePage.loggedOutHomePage,
-      ToolsPageSearch.search,
-      WorkflowsPageSearch.search,
-      SearchPage.search,
-      TRS.searchAndDrillDown,
-      Metadata.go
-    ),
-
-    scenario(loggedInUserFlow_1_9).feed(tokenFeeder).exec(
-      LoggedInHomepage.loggedInHomepage,
-      Accounts.accountsPage,
-      io.dockstore.release_1_9.SearchPage.search,
-      Organizations.organizations,
-      CreateAndUpdateHostedWorkflow.create,
-      HostedWorkflows.fetchRandomAndTogglePublish,
-      MyWorkflows.myWorkflows,
-      StarredToolsAndWorkflows.page
-    ),
-
-    scenario(loggedOutUserFlow_1_9).exec(
-      LoggedOutHomepage.loggedOutHomepage,
-      io.dockstore.release_1_9.SearchPage.search,
-      TRS.searchAndDrillDown,
-      Metadata.go
-    ),
-
     jamboreeScenario,
     terraDescriptorScenario,
-    terraVersionsScenario,
-
+    terraVersionsScenario.feed(workflowsFeeder),
   )
 
-  private def getAnonymousScenario = {
-    scenarios.find(s => s.name equals(anonymousUsersScenario)).get
+  private def calculateTrsRequestsForScenario(trsRequestsPerHour: Int, testTime: Int): Int = {
+    trsRequestsPerHour * ((testTime / 60) + 1)
   }
 
-
-  private def getScenario(scenarioName: String) = {
-    println("scenario is " + scenarioName)
-    val maybeBuilder: Option[ScenarioBuilder] = scenarios.find(sb => sb.name equals(scenarioName))
-    if (!maybeBuilder.isDefined) {
-      println(s"Invalid scenario name ${scenarioName}.")
-      println("Valid scenario names are: ")
-      scenarios.foreach(sb => println(s"\t${sb.name}"))
-    }
-    maybeBuilder
+  private def calculateTerraDescriptorRequestsForScenario(terraWorkflowRuns: Int, terraRequestsRps: Int, testTimeInMinutes: Int) = {
+    val requestsPerMinute = terraWorkflowRuns * terraRequestsRps * 60
+    requestsPerMinute * testTimeInMinutes
   }
 
-  val defaultMaxResponseTimeMs  = (10 seconds).toMillis.toInt
+  val defaultMaxResponseTimeMs  = Duration(10, "second").toMillis.toInt
   val baseUrl = System.getProperty("baseUrl", "http://localhost:4200")
-  val atOnce = "true".equals(System.getProperty("atOnce"))
   val maxResponseTimeMs = Integer.getInteger("maxResponseTimeMs", defaultMaxResponseTimeMs)
   val successThreshold = Integer.getInteger("successThreshold", 95).doubleValue()
+  val testTime = Integer.getInteger("timeInMinutes")
+  val terraWorkflowRuns = Integer.getInteger("terraWorkflowRuns")
+  val terraRequestsRps = Integer.getInteger("terraRequestsRps")
+  val webSiteUsers = Integer.getInteger("webSiteUsers")
+  val gitHubAppRpm = Integer.getInteger("gitHubAppRpm")
+  val trsRequestsPerHour = Integer.getInteger("trsRequestsPerHour")
+
   val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl).userAgentHeader("gatling")
+
+  val trsRequestsForScenario = calculateTrsRequestsForScenario(trsRequestsPerHour, testTime)
+  val terraDescriptorRequests: Int = calculateTerraDescriptorRequestsForScenario(terraWorkflowRuns, terraRequestsRps, testTime)
+  val testTimeDuration = Duration(testTime.longValue(), "minute")
+
   setUp(
-    List(terraDescriptorScenario.inject(rampUsers(20).during(1.minutes)),
-      terraVersionsScenario.inject(rampUsers(4).during(1.minutes)),
-      jamboreeScenario.inject(rampUsers(4).during(1 minutes))
+    List(
+      terraVersionsScenario.inject(atOnceUsers(terraWorkflowRuns)),
+      terraDescriptorScenario.inject(rampUsers(terraDescriptorRequests).during(testTimeDuration)),
+      jamboreeScenario.inject(
+        rampUsers(webSiteUsers).during(testTimeDuration)
+      ),
+      trsScenario.inject(rampUsers(trsRequestsForScenario).during(testTimeDuration))
     )
   ).protocols(httpProtocolBuilder)
-
-//  getScenario(System.getProperty("scenario", everythingScenario + "," + anonymousUsersScenario)).map(sb => {
-//    val defaultMaxResponseTimeMs  = (10 seconds).toMillis.toInt
-//
-//    val authUsers = Integer.getInteger("authUsers", 20)
-//    val anonUsers = if (sb.name.equals(everythingScenario)) Integer.getInteger("anonUsers", 20) else new Integer(0)
-//    val rampMinutes = Integer.getInteger("rampMinutes", 5)
-//    val baseUrl = System.getProperty("baseUrl", "http://localhost:8080")
-//    val atOnce = "true".equals(System.getProperty("atOnce"))
-//    val maxResponseTimeMs = Integer.getInteger("maxResponseTimeMs", defaultMaxResponseTimeMs)
-//    val successThreshold = Integer.getInteger("successThreshold", 95).doubleValue()
-//
-//    val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl)
-//
-//    print(s"Executing for ${authUsers} authorized users and ${anonUsers} anonymous users, ")
-//    if (atOnce) print("all at once, ") else println(s"over ${rampMinutes} minutes, ")
-//    print(s"against ${baseUrl}, for scenario ${sb.name}")
-//    println()
-//
-//    def setupScenario = {
-//      val authUsersRate = if (atOnce) atOnceUsers(authUsers) else rampUsers(authUsers) during(rampMinutes minutes)
-//      val anonUsersRate = if (atOnce) atOnceUsers(anonUsers) else rampUsers(anonUsers) during(rampMinutes minutes)
-//      val authUsersBuilder = sb.inject(authUsersRate)
-//      val anonUsersBuilder = getAnonymousScenario.inject(anonUsersRate);
-//      val populationBuilders = if (sb.name equals(everythingScenario)) List(authUsersBuilder, anonUsersBuilder) else List(authUsersBuilder)
-//      setUp(populationBuilders).protocols(httpProtocolBuilder)
-//    }
-//
-//    setupScenario.assertions(
-//      global.successfulRequests.percent.gt(successThreshold),
-//      global.responseTime.max.lt(maxResponseTimeMs) // milliseconds
-//    )
-//  })
 
 }

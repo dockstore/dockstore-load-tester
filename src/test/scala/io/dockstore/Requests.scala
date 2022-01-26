@@ -3,6 +3,9 @@ package io.dockstore
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 /**
   * <p>Simple wrapper for Dockstore API requests. Some reasons for the wrapper:
   * <ul>
@@ -42,8 +45,9 @@ object Requests {
     }
 
     def getToolVersions(id: String) = {
+      val encodedId: String = URLEncoder.encode(id, StandardCharsets.UTF_8.toString)
       http("Get tool")
-        .get(s"/api/api/ga4gh/v1/tools/${id}/versions")
+        .get(s"/api/api/ga4gh/v1/tools/${encodedId}/versions")
     }
 
     def getToolVersion(id: String, version: String) = {
@@ -51,10 +55,10 @@ object Requests {
         .get(s"/api/api/ga4gh/v1/tools/${id}/versions/${version}")
     }
 
-    def getToolDescriptor(id: String, version: String, descriptorType: String) = {
-      http("Get tool version")
-        .get(s"/api/api/ga4gh/v1/tools/${id}/versions/${version}/${descriptorType}/descriptor")
-
+    def getToolDescriptor(encodedWorkflowId: String, workflowVersion: String, descriptorType: String) = {
+      val value = "/api/api/ga4gh/v1/tools/#{encodedWorkflowId}/versions/#{workflowVersion}/#{descriptorType}/descriptor"
+      http(s"Get ${value}")
+        .get(value)
     }
 
     def getToolTests(id: String, version: String) = {

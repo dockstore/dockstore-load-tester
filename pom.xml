@@ -15,12 +15,20 @@
         <gatling.version>3.7.3</gatling.version>
         <scala-maven-plugin.version>3.3.1</scala-maven-plugin.version>
 
-        <atOnce>false</atOnce>
         <baseUrl>http://localhost:4200</baseUrl>
-        <authUsers>50</authUsers>
-        <anonUsers>50</anonUsers>
-        <rampMinutes>5</rampMinutes>
-        <percentToPublish>25</percentToPublish>
+        <!-- How long the tests should run for -->
+        <timeInMinutes>5</timeInMinutes>
+        <!-- The number of workflows being run in Terra -->
+        <terraWorkflowRuns>1</terraWorkflowRuns>
+        <!-- Number of requests per second per run from Terra -->
+        <terraRequestsRps>5</terraRequestsRps>
+        <!-- Number of web site users, all anonymous for now -->
+        <webSiteUsers>10</webSiteUsers>
+        <!-- The number of GitHub app refreshes per minute -->
+        <gitHubAppRpm>5</gitHubAppRpm>
+        <!-- The number of requests to fetch all TRS tools and drill down per hour (they're not frequent) -->
+        <trsRequestsPerHour>6</trsRequestsPerHour>
+
         <maxResponseTimeMs>10000</maxResponseTimeMs>
         <successThreshold>95</successThreshold>
         <scenario>Everything</scenario>
@@ -109,15 +117,14 @@
                 <artifactId>gatling-maven-plugin</artifactId>
                 <version>${gatling-plugin.version}</version>
                 <configuration>
-                    <runDescription>${authUsers} auth users, ${anonUsers} anon users, ramp minutes ${rampMinutes}, scenario ${scenario}, atOnce ${atOnce}</runDescription>
+                    <runDescription>${terraWorkflowRuns} workflow runs at ${terraRequestsRps} RPS, ${webSiteUsers} web site users, ramp minutes ${timeInMinutes}</runDescription>
                     <jvmArgs>
-                        <jvmArg>-DatOnce=${atOnce}</jvmArg>
-                        <jvmArg>-DbaseUrl=${baseUrl}</jvmArg>
-                        <jvmArg>-DauthUsers=${authUsers}</jvmArg>
-                        <jvmArg>-DanonUsers=${anonUsers}</jvmArg>
-                        <jvmArg>-DrampMinutes=${rampMinutes}</jvmArg>
-                        <jvmArg>-Dscenario=${scenario}</jvmArg>
-                        <jvmArg>-DpercentToPublish=${percentToPublish}</jvmArg>
+                        <jvmArg>-DtimeInMinutes=${timeInMinutes}</jvmArg>
+                        <jvmArg>-DterraWorkflowRuns=${terraWorkflowRuns}</jvmArg>
+                        <jvmArg>-DterraRequestsRps=${terraRequestsRps}</jvmArg>
+                        <jvmArg>-DwebSiteUsers=${webSiteUsers}</jvmArg>
+                        <jvmArg>-DgitHubAppRpm=${gitHubAppRpm}</jvmArg>
+                        <jvmArg>-DtrsRequestsPerHour=${trsRequestsPerHour}</jvmArg>
                     </jvmArgs>
                 </configuration>
             </plugin>
