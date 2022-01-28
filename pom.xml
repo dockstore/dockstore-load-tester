@@ -28,6 +28,8 @@
         <gitHubAppRpm>5</gitHubAppRpm>
         <!-- The number of requests to fetch all TRS tools and drill down per hour (they're not frequent) -->
         <trsRequestsPerHour>6</trsRequestsPerHour>
+        <!-- The number of GitHub notifications per hour -->
+        <githubNotificationsPerHour>2</githubNotificationsPerHour>
 
         <maxResponseTimeMs>10000</maxResponseTimeMs>
         <successThreshold>95</successThreshold>
@@ -125,6 +127,7 @@
                         <jvmArg>-DwebSiteUsers=${webSiteUsers}</jvmArg>
                         <jvmArg>-DgitHubAppRpm=${gitHubAppRpm}</jvmArg>
                         <jvmArg>-DtrsRequestsPerHour=${trsRequestsPerHour}</jvmArg>
+                        <jvmArg>-DgithubNotificationsPerHour=${githubNotificationsPerHour}</jvmArg>
                     </jvmArgs>
                 </configuration>
             </plugin>

@@ -2,6 +2,9 @@ package io.dockstore
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
+import io.gatling.http.client.Param
+import io.gatling.http.client.body.form.FormUrlEncodedRequestBodyBuilder
+import io.gatling.http.client.body.multipart.MultipartFormDataRequestBodyBuilder
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -134,7 +137,7 @@ object Requests {
   object Workflow {
     def getPublishedWorkflow(repo: String) = {
       http("Published Worfklow")
-        .get(s"/api/workflows/path/workflow/${repo}/published")
+        .get(s"/api/workflows/path/workflow/${repo}/published?services=false")
     }
 
     def getStarredUsers(workflowId: String) = {
@@ -145,8 +148,8 @@ object Requests {
     def getPublished(filter: String = "") = {
       http("Get first 10 published workflows")
         .get("/api/workflows/published")
-        .queryParam("offset", 0)
-        .queryParam("limit", 10)
+        .queryParam("offset", "0")
+        .queryParam("limit", "10")
         .queryParam("filter", filter)
         .queryParam("sortCol", "stars")
         .queryParam("sortOrder", "desc")
@@ -231,6 +234,16 @@ object Requests {
         .headers(authHeader(token))
     }
 
+    def githubRelease() = {
+      http("GitHub Release")
+          .post("/api/workflows/github/release")
+          .formParam("repository", "#{repository}")
+          .formParam("username", "#{username}")
+          .formParam("installationId", System.getProperty(DockstoreWebUser.INSTALLATION_ID))
+          .formParam("gitReference", "#{gitReference}")
+          .headers(authHeader(System.getProperty(DockstoreWebUser.CURATOR_TOKEN)))
+    }
+
     /*
         "/workflows/{workflowId}/publish": {
     "/workflows/{workflowId}/users": {
@@ -279,7 +292,7 @@ object Requests {
       http("Get first 10 published containers")
         .get("/api/containers/published")
         .queryParam("offset", "0")
-        .queryParam("limit", 10)
+        .queryParam("limit", "10")
         .queryParam("filter", filter)
         .queryParam("sortCol", "stars")
         .queryParam("sortOrder", "desc")

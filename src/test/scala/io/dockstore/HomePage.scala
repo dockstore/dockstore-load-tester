@@ -5,11 +5,7 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
 /**
-  * Makes the API calls of a user going to the home page
-  * <ol>
-  *   <li>Gets metadata
-  *   <li>Gets tools
-  * </ol>
+  * Makes the API calls of a user going to the home page, then pauses
   */
 object HomePage {
 
@@ -26,4 +22,6 @@ object HomePage {
           Categories.getCategories.check(status is 200)
         )
   )
+      // User admires home page for 5-10 seconds before moving on
+      .pause(5, 10)
 }
