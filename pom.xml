@@ -18,14 +18,10 @@
         <baseUrl>http://localhost:4200</baseUrl>
         <!-- How long the tests should run for -->
         <timeInMinutes>5</timeInMinutes>
-        <!-- The number of workflows being run in Terra -->
-        <terraWorkflowRuns>1</terraWorkflowRuns>
         <!-- Number of requests per second per run from Terra -->
-        <terraRequestsRps>5</terraRequestsRps>
+        <terraRequestsRps>8</terraRequestsRps>
         <!-- Number of web site users, all anonymous for now -->
         <webSiteUsers>10</webSiteUsers>
-        <!-- The number of GitHub app refreshes per minute -->
-        <gitHubAppRpm>5</gitHubAppRpm>
         <!-- The number of requests to fetch all TRS tools and drill down per hour (they're not frequent) -->
         <trsRequestsPerHour>6</trsRequestsPerHour>
         <!-- The number of GitHub notifications per hour -->
@@ -122,10 +118,8 @@
                     <runDescription>${terraWorkflowRuns} workflow runs at ${terraRequestsRps} RPS, ${webSiteUsers} web site users, ramp minutes ${timeInMinutes}</runDescription>
                     <jvmArgs>
                         <jvmArg>-DtimeInMinutes=${timeInMinutes}</jvmArg>
-                        <jvmArg>-DterraWorkflowRuns=${terraWorkflowRuns}</jvmArg>
                         <jvmArg>-DterraRequestsRps=${terraRequestsRps}</jvmArg>
                         <jvmArg>-DwebSiteUsers=${webSiteUsers}</jvmArg>
-                        <jvmArg>-DgitHubAppRpm=${gitHubAppRpm}</jvmArg>
                         <jvmArg>-DtrsRequestsPerHour=${trsRequestsPerHour}</jvmArg>
                         <jvmArg>-DgithubNotificationsPerHour=${githubNotificationsPerHour}</jvmArg>
                     </jvmArgs>

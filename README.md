@@ -7,38 +7,32 @@ Dockstore Load/Performance/Stress Tester
 
 ### Setup
 
-#### Tokens and Users
+#### Curator token and Installation Id
 
-For authenticated endpoints, the tests use tokens that come from the file `data/dummyUsersAndTokens.csv`.
-Those users and tokens need to be in the Dockstore database. A SQL file, `dummyusers.sql`, will create
-the users and tokens. Direct access to the Dockstore database is required. Assuming Postgres is running in a Docker
-container named `postgres1`, execute the following:
+The tests can invoke the `/workflows//github/release` endpoint, the one invoked indirectly invoked by GitHub Apps from
+AWS API Gateway, to simulate GitHub App notifications.
 
-```
-docker exec -i postgres1 psql webservice_test -U postgres < dummyusers.sql
-```
-
-Note: the `dummyusers.sql` was generated from `data/dummyUsersAndTokens.csv` 
-by `src/test/scala/io/dockstore/tools/UserGenerator.scala`; if you need to tweak the SQL you
-should modify the generator.
+To invoke this endpoint, the tests need a curator token and a GitHub installation id. If both are not provided, the GitHub
+app notifications are not run.
 
 ### Run
 
-You can configure the following properties with `-D`, e.g., `-DauthUsers=50`. Defaults are in the `pom.xml`.
+You can configure the following properties with `-D`, e.g., `-DtimeInMinutes=5`. Defaults are in the `pom.xml`.
 
-* authUsers -- the number of authenticated users to simulate; defaults to 50
-* anonUsers -- the number of anonymous users to simulate; defaults to 50; only applies if scenario, below, is `Everything`
-* atOnce -- true if all users should hit at once, or if they should ramp up over time; defaults to false
-* rampMinutes -- if `atOnce` is not true, the number of minutes the specified number of users will be phased in; defaults to 5
 * baseUrl -- the Dockstore webservice endpoint to run the tests against; defaults to `http://localhost:4200`
-* scenario -- the name of the scenario to run; see DockstoreWebUser.scala for all available; defaults to `Everything`, which runs (almost) everything
+* timeInMinutes -- how many minutes to run the simulation
+* terraRequestsRps -- the number of requests per second by Terra
+* webSiteUsers -- the number of website users
+* trsRequestsPerHour -- the number of requests to fetch TRS tools per hour
+* githubNotificationsPerHour -- the number of GitHub app notifications per hour
 * maxResponseTimeMs -- if any API call takes longer than this, simulation will fail; default is 10,000, which is probably too high
 * successThreshold -- the percentage of calls that should pass; if less, the simulation fails; default is 95
-* percentToPublish -- the percentage of workflows created in the `HostedWorkflowCrud` scenario that will be published; the default is 25
 
 Regarding the last two items, the tests will still run to completion; if there is failure, there will a message so indicating at the end.
 
-The default values are defined in the `<properties>` section of the pom.xml.
+#### Terra Requests
+
+Fetches a WDL descriptor files. The files are specified in data/workflows.csv
 
 ```bash
 mvn clean test-compile gatling:test
@@ -92,8 +86,8 @@ For debugging, look at the file `logback-test.xml`. Here you can choose between 
    1. For simulating web users, I assume the caching is done
 on a per-user basis, which is what we would want, as the browser would cache requests based on headers. Need to verify.
    2. For simulating API calls, we probably want to disable caching, as HTTP client libraries don't do that, AFAIK.
+1. Make all inputs external, at least optionally, so that if you change a CSV file, you don't need to rebuild.
 1. SearchPage only searches one term, author. Ideally would do more complex searches.
-1. Doesn't test integration with external repos, e.g., refreshing from GitHub
 1. Add checks for things that take too long. This is done globally and is configurable, but should maybe add checks
 for certain key APIs.
 1. Figure out creating hosted tools test. Problem is that I cannot generate a unique name for the tools like I can for workflows.

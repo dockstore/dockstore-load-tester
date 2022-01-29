@@ -100,9 +100,10 @@ object Requests {
         .get("/api/api/ga4gh/v2/metadata")
     }
 
-    def getTools = {
+    def getTools(queryParamMap: Map[String, Any] = Map()) = {
       http("GA4GHv2 Tools GET")
         .get("/api/api/ga4gh/v2/tools")
+          .queryParamMap(queryParamMap)
     }
 
     def getTool(id: String) = {

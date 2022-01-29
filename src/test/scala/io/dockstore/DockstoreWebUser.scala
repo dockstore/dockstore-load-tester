@@ -4,7 +4,6 @@ import io.dockstore
 import io.dockstore.DockstoreWebUser.{CURATOR_TOKEN, INSTALLATION_ID}
 import io.dockstore.release_1_9.{LoggedInHomepage, LoggedOutHomepage, Organizations, SearchPage}
 import io.gatling.core.Predef._
-import io.gatling.core.feeder.Record
 import io.gatling.core.structure.{PopulationBuilder, ScenarioBuilder}
 
 import scala.::
@@ -31,11 +30,10 @@ class DockstoreWebUser extends Simulation {
   val baseUrl = System.getProperty("baseUrl", "http://localhost:4200")
   val maxResponseTimeMs = Integer.getInteger("maxResponseTimeMs", defaultMaxResponseTimeMs)
   val successThreshold = Integer.getInteger("successThreshold", 95).doubleValue()
-  val scenarioTime = Integer.getInteger("timeInMinutes")
   val terraWorkflowRuns = Integer.getInteger("terraWorkflowRuns")
   val terraRequestsRps = Integer.getInteger("terraRequestsRps")
   val webSiteUsers = Integer.getInteger("webSiteUsers")
-  val gitHubAppRpm = Integer.getInteger("gitHubAppRpm")
+  val gitHubAppRpm = Integer.getInteger("githubNotificationsPerHour")
   val trsRequestsPerHour = Integer.getInteger("trsRequestsPerHour")
   val githubNotificationsPerHour = Integer.getInteger("githubNotificationsPerHour")
   val workflowRunsFeeder = csv("data/workflows.csv").circular
@@ -58,39 +56,37 @@ class DockstoreWebUser extends Simulation {
     ToolsPageSearch.search
   )
   val trsScenario: ScenarioBuilder = scenario("TRS").exec(TRS.searchAndDrillDown)
-  val workflowRefreshScenario = scenario("Workflow Refresh").feed(gitHubAppFeeder).exec(WorkflowRefresh.gitHubApp)
 
 
   private def calculateRequestsForScenario(requestsPerHour: Int, testTime: Int): Int = {
     requestsPerHour * ((testTime / 60) + 1)
   }
 
-  private def calculateTerraDescriptorRequestsForScenario(terraWorkflowRuns: Int, terraRequestsRps: Int, testTimeInMinutes: Int) = {
-    val requestsPerMinute = terraWorkflowRuns * terraRequestsRps * 60
-    requestsPerMinute * testTimeInMinutes
+  private def calculateTerraDescriptorRequestsForScenario(terraRequestsRps: Int, testTimeInMinutes: Int) = {
+    terraRequestsRps * 60 * testTimeInMinutes
   }
 
   private def getScenarios() = {
+    val scenarioTimeInMinutes = Integer.getInteger("timeInMinutes")
+    val trsRequestsForScenario = calculateRequestsForScenario(trsRequestsPerHour, scenarioTimeInMinutes)
+    val terraDescriptorRequests: Int = calculateTerraDescriptorRequestsForScenario(terraRequestsRps, scenarioTimeInMinutes)
+    val scenarioTimeDuration = Duration(scenarioTimeInMinutes.longValue(), "minute")
     val scenarios = ListBuffer(
-      //      terraVersionsScenario.inject(atOnceUsers(terraWorkflowRuns)),
-      //      terraDescriptorScenario.inject(rampUsers(terraDescriptorRequests).during(testTimeDuration)),
+      terraVersionsScenario.inject(atOnceUsers(terraWorkflowRuns)),
+      terraDescriptorScenario.inject(rampUsers(terraDescriptorRequests).during(scenarioTimeDuration)),
       webUserScenario.inject(rampUsers(webSiteUsers).during(scenarioTimeDuration)),
-      //      trsScenario.inject(rampUsers(trsRequestsForScenario).during(testTimeDuration))
+      trsScenario.inject(rampUsers(trsRequestsForScenario).during(scenarioTimeDuration))
     )
     // If we have a token and an installation id, do the workflow refreshes
     if (System.getProperty(INSTALLATION_ID) != null && System.getProperty(CURATOR_TOKEN) != null) {
-      scenarios += workflowRefreshScenario.inject(rampUsers(githubRequestsForScenario).during(scenarioTime))
+      val workflowRefreshScenario = scenario("Workflow Refresh").feed(gitHubAppFeeder).exec(WorkflowRefresh.gitHubApp)
+      scenarios += workflowRefreshScenario.inject(
+        rampUsers(calculateRequestsForScenario(gitHubAppRpm, scenarioTimeInMinutes)).during(scenarioTimeDuration))
     }
     scenarios.toList
   }
 
   val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl).userAgentHeader("gatling")
-
-  val trsRequestsForScenario = calculateRequestsForScenario(trsRequestsPerHour, scenarioTime)
-  val terraDescriptorRequests: Int = calculateTerraDescriptorRequestsForScenario(terraWorkflowRuns, terraRequestsRps, scenarioTime)
-  val scenarioTimeDuration = Duration(scenarioTime.longValue(), "minute")
-  val githubRequestsForScenario: Int = calculateRequestsForScenario(gitHubAppRpm, scenarioTime)
-
 
   setUp(
     getScenarios()
