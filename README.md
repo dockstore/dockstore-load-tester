@@ -5,7 +5,7 @@ Dockstore Load/Performance/Stress Tester
 
 ### Requirements
 
-You need Java and Maven installed.
+You need Java 11 and Maven installed.
 
 To test, optionally, GitHub apps, you will need a GitHub app installation id, of a GitHub app installed for the Dockstore instance being
 tested, as well as a curator token.

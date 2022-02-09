@@ -1,70 +1,85 @@
 package io.dockstore
 
-import io.dockstore.Requests.Ga4gh2
-
-import scala.concurrent.duration._
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import io.gatling.jdbc.Predef._
 
 /**
-  * Makes the API calls of a user going to the search page.
-  *
-  * <ol>
-  *   <li>Gets the aggregations
-  *   <li>Selects a random author
-  *   <li>Queries for the random author
-  * </ol>
-  */
-object SearchPage  {
+ * Simulates a Dockstore user visiting the search page and performing one search request
+ *
+ */
+object SearchPage {
 
-  private val searchPath = "/api/ga4gh/v2/extended/tools/entry/_search"
+    private val searchPath = "/api/api/ga4gh/v2/extended/tools/entry/_search"
 
-  val search = exec(
-			Ga4gh2.getMetadata
-				.check(status is 200)
-		)
-    .exec(
-      http("Get Tools")
-        .post(searchPath)
-        .body(RawFileBody("bodies/search/tools.json")).asJson
-        .check(status is 200)
-    )
-    .exec(
-      http("Get Workflows")
-        .post(searchPath)
-        .body(RawFileBody("bodies/search/workflows.json")).asJson
-        .check(status is 200)
-    )
-    .exec(
-      http("Get Terms and Counts")
-        .post(searchPath)
-        .body(RawFileBody("bodies/search/allAggregations.json")).asJson
-        .check(status is 200)
-        .check(jsonPath("$.aggregations.author.buckets[*].key").findRandom.saveAs("author"))
-    )
-    .exec(
-      http("Search for an author 1")
-        .post(searchPath)
-        .body(ElFileBody("bodies/search/searchAuthor1.json")).asJson
-        .check(status is 200)
-    )
-    .exec(
-      http("Search for an author 2")
-        .post(searchPath)
-        .body(ElFileBody("bodies/search/searchAuthor2.json")).asJson
-        .check(status is 200)
-    )
-    .exec(
-      http("Search for an author 3")
-        .post(searchPath)
-        .body(ElFileBody("bodies/search/searchAuthor3.json")).asJson
-        .check(status is 200)
-    )
-    .exec(
-      http("Search for an author 4")
-        .post(searchPath)
-        .body(ElFileBody("bodies/search/searchAuthor4.json")).asJson
-        .check(status is 200)
-    )
+    val search = {
+        val r = scala.util.Random
+        val searchIndex = r.nextInt(3)
+        val searchTermFiles = Array("searchPcawg", "searchGatk", "searchRandomTerm")
+
+        // Search page does 7 calls on page load
+        exec(
+            http("Load Search Page Call 1")
+                .post(searchPath)
+                .body(RawFileBody("bodies/search/loadSearchPageCall1-1.9.0.json")).asJson
+                .check(status is 200)
+                .check(jsonPath("$['aggregations']['labels.value.keyword']['buckets'][*]['key']").findRandom.saveAs("searchTerm")
+                )
+        )
+            .exec(
+                http("Load Search Page Call 2")
+                    .post(searchPath)
+                    .body(RawFileBody("bodies/search/loadSearchPageCall2-1.9.0.json")).asJson
+                    .check(status is 200)
+            )
+            .exec(
+                http("Load Search Page Call 3")
+                    .post(searchPath)
+                    .body(RawFileBody("bodies/search/loadSearchPageCall3-1.9.0.json")).asJson
+                    .check(status is 200)
+            )
+            .exec(
+                http("Load Search Page Call 4")
+                    .post(searchPath)
+                    .body(RawFileBody("bodies/search/loadSearchPageCall4-1.9.0.json")).asJson
+                    .check(status is 200)
+            )
+            .exec(
+                http("Load Search Page Call 5")
+                    .post(searchPath)
+                    .body(RawFileBody("bodies/search/loadSearchPageCall5-1.9.0.json")).asJson
+                    .check(status is 200)
+            )
+            .exec(
+                http("Load Search Page Call 6")
+                    .post(searchPath)
+                    .body(RawFileBody("bodies/search/loadSearchPageCall6-1.9.0.json")).asJson
+                    .check(status is 200)
+            )
+            .exec(
+                http("Load Search Page Call 7")
+                    .post(searchPath)
+                    .body(RawFileBody("bodies/search/loadSearchPageCall7-1.9.0.json")).asJson
+                    .check(status is 200)
+            )
+            .pause(2)
+            .exec(
+                http("Search for random term Call 1")
+                    .post(searchPath)
+                    .body(ElFileBody("bodies/search/performSearches-1.9.0/searchRandomTerm1.json")).asJson
+                    .check(status is 200)
+            )
+            .exec(
+                http("Search for random term Call 2")
+                    .post(searchPath)
+                    .body(ElFileBody("bodies/search/performSearches-1.9.0/searchRandomTerm2.json")).asJson
+                    .check(status is 200)
+            )
+            .exec(
+                http("Search for random term Call 3")
+                    .post(searchPath)
+                    .body(ElFileBody("bodies/search/performSearches-1.9.0/searchRandomTerm3.json")).asJson
+                    .check(status is 200)
+            )
+    }
+
 }

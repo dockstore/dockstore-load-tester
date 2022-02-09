@@ -2,7 +2,6 @@ package io.dockstore
 
 import io.dockstore
 import io.dockstore.DockstoreWebUser.{CURATOR_TOKEN, INSTALLATION_ID}
-import io.dockstore.release_1_9.{LoggedInHomepage, LoggedOutHomepage, Organizations, SearchPage}
 import io.gatling.core.Predef._
 import io.gatling.core.structure.{PopulationBuilder, ScenarioBuilder}
 
@@ -49,7 +48,7 @@ class DockstoreWebUser extends Simulation {
   )
   val webUserScenario: ScenarioBuilder = scenario("Web User").exec(
     HomePage.loggedOutHomePage,
-    io.dockstore.release_1_9.SearchPage.search,
+    SearchPage.search,
     Organizations.organizations,
     WorkflowsPageSearch.search,
     ToolsPageSearch.search
