@@ -1,2 +1,3 @@
-repository,gitReference,username
-coverbeck/viral-pipelines,refs/heads/dockstore-test,coverbeck
+repository,gitReference,username,expectedStatus
+coverbeck/viral-pipelines,refs/heads/dockstore-test2,coverbeck,204
+dockstore/lambda,refs/heads/develop,coverbeck,418

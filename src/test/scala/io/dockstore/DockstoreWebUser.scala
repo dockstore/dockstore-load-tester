@@ -30,7 +30,6 @@ class DockstoreWebUser extends Simulation {
   val baseUrl = System.getProperty("baseUrl", "http://localhost:4200")
   val maxResponseTimeMs = Integer.getInteger("maxResponseTimeMs", defaultMaxResponseTimeMs)
   val successThreshold = Integer.getInteger("successThreshold", 95).doubleValue()
-  val terraWorkflowRuns = Integer.getInteger("terraWorkflowRuns")
   val terraRequestsRps = Integer.getInteger("terraRequestsRps")
   val webSiteUsers = Integer.getInteger("webSiteUsers")
   val gitHubAppRpm = Integer.getInteger("githubNotificationsPerHour")
@@ -48,7 +47,7 @@ class DockstoreWebUser extends Simulation {
   val terraVersionsScenario: ScenarioBuilder = scenario(terraWorkflowVersions).feed(workflowRunsFeeder).exec(
     Terra.fetchWorkflowVersions
   )
-  val webUserScenario: ScenarioBuilder = scenario("jamboree").exec(
+  val webUserScenario: ScenarioBuilder = scenario("Web User").exec(
     HomePage.loggedOutHomePage,
     io.dockstore.release_1_9.SearchPage.search,
     Organizations.organizations,
@@ -72,7 +71,7 @@ class DockstoreWebUser extends Simulation {
     val terraDescriptorRequests: Int = calculateTerraDescriptorRequestsForScenario(terraRequestsRps, scenarioTimeInMinutes)
     val scenarioTimeDuration = Duration(scenarioTimeInMinutes.longValue(), "minute")
     val scenarios = ListBuffer(
-      terraVersionsScenario.inject(atOnceUsers(terraWorkflowRuns)),
+      terraVersionsScenario.inject(atOnceUsers(webSiteUsers)),
       terraDescriptorScenario.inject(rampUsers(terraDescriptorRequests).during(scenarioTimeDuration)),
       webUserScenario.inject(rampUsers(webSiteUsers).during(scenarioTimeDuration)),
       trsScenario.inject(rampUsers(trsRequestsForScenario).during(scenarioTimeDuration))
@@ -86,6 +85,7 @@ class DockstoreWebUser extends Simulation {
     scenarios.toList
   }
 
+  // Set a header so the AWS WAF doesn't block requests
   val httpProtocolBuilder = HttpProtocols.getProtocol(baseUrl).userAgentHeader("gatling")
 
   setUp(

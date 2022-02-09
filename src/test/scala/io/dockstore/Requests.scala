@@ -243,6 +243,7 @@ object Requests {
           .formParam("installationId", System.getProperty(DockstoreWebUser.INSTALLATION_ID))
           .formParam("gitReference", "#{gitReference}")
           .headers(authHeader(System.getProperty(DockstoreWebUser.CURATOR_TOKEN)))
+          .check(status is(session => session("expectedStatus").as[Int]))
     }
 
     /*

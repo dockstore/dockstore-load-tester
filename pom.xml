@@ -19,7 +19,7 @@
         <!-- How long the tests should run for -->
         <timeInMinutes>5</timeInMinutes>
         <!-- Number of requests per second per run from Terra -->
-        <terraRequestsRps>8</terraRequestsRps>
+        <terraRequestsRps>4</terraRequestsRps>
         <!-- Number of web site users, all anonymous for now -->
         <webSiteUsers>10</webSiteUsers>
         <!-- The number of requests to fetch all TRS tools and drill down per hour (they're not frequent) -->
@@ -115,7 +115,7 @@
                 <artifactId>gatling-maven-plugin</artifactId>
                 <version>${gatling-plugin.version}</version>
                 <configuration>
-                    <runDescription>${terraWorkflowRuns} workflow runs at ${terraRequestsRps} RPS, ${webSiteUsers} web site users, ramp minutes ${timeInMinutes}</runDescription>
+                    <runDescription>Terra ${terraRequestsRps} RPS, ${webSiteUsers} web site users, ramp minutes ${timeInMinutes}</runDescription>
                     <jvmArgs>
                         <jvmArg>-DtimeInMinutes=${timeInMinutes}</jvmArg>
                         <jvmArg>-DterraRequestsRps=${terraRequestsRps}</jvmArg>

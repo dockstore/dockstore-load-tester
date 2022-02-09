@@ -13,15 +13,15 @@ object TRS {
                     .check(status is 200)
                     .check(jsonPath("$[*].id").findRandom.transform(id => Utils.encode(id)).saveAs("id"))
             )
-                .exec(
-                    Ga4gh2.getTool("${id}")
-                        .check(status is 200)
-                )
-                .exec(
-                    // A request made from Galaxy
-                    Ga4gh2.getTools(Map("toolClass" -> "Workflow", "descriptorType" -> "GALAXY", "description" -> "test"))
-                        .check(status is 200)
-                )
+            .exec(
+                Ga4gh2.getTool("${id}")
+                    .check(status is 200)
+            )
+            .exec(
+                // A request made from Galaxy
+                Ga4gh2.getTools(Map("toolClass" -> "Workflow", "descriptorType" -> "GALAXY", "description" -> "test"))
+                    .check(status is 200)
+            )
         } {
             exec(
                 Ga4gh.getTools
