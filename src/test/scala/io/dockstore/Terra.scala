@@ -16,24 +16,23 @@ object Terra {
     /*
      * These values are the headers in data/workflows.csv
      */
-    private val workflowId = "workflowId"
-    private val workflowVersion = "workflowVersion"
-    private val descriptorType = "descriptorType"
-    private val encodedWorkflowId = "encodedWorkflowId"
+    private val trsId = "trsId"
+    private val encodedTrsId = "encodedTrsId"
 
     val fetchDescriptor = {
-        exec(session => session.set(encodedWorkflowId, URLEncoder.encode(session(workflowId).as[String], StandardCharsets.UTF_8.toString)))
+        exec(session => session.set(encodedTrsId, URLEncoder.encode(session(trsId).as[String], StandardCharsets.UTF_8.toString)))
         .exec(
-            Ga4gh.getToolDescriptor(encodedWorkflowId, workflowVersion, descriptorType)
+            Ga4gh.getToolDescriptor()
                 .check(status is 200)
 
         )
     }
 
-    val fetchWorkflowVersions =
-        exec(session => session.set(encodedWorkflowId, URLEncoder.encode(session(workflowId).as[String], StandardCharsets.UTF_8.toString)))
-        exec(
-            Ga4gh.getToolVersions(encodedWorkflowId)
+    val fetchWorkflowVersions = {
+        exec(session => session.set(encodedTrsId, URLEncoder.encode(session(trsId).as[String], StandardCharsets.UTF_8.toString)))
+        .exec(
+            Ga4gh.getToolVersions()
                 .check(status is 200)
         )
+    }
 }

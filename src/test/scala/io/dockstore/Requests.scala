@@ -47,10 +47,14 @@ object Requests {
         .get(s"/api/api/ga4gh/v1/tools/${id}")
     }
 
-    def getToolVersions(id: String) = {
-      val encodedId: String = URLEncoder.encode(id, StandardCharsets.UTF_8.toString)
-      http("Get tool")
-        .get(s"/api/api/ga4gh/v1/tools/${encodedId}/versions")
+    /**
+     * Requires session attribute encodedTrsId be set
+     * @return
+     */
+    def getToolVersions() = {
+      val value = "/api/api/ga4gh/v1/tools/#{encodedTrsId}/versions"
+      http(s"Get ${value}")
+        .get(value)
     }
 
     def getToolVersion(id: String, version: String) = {
@@ -58,8 +62,12 @@ object Requests {
         .get(s"/api/api/ga4gh/v1/tools/${id}/versions/${version}")
     }
 
-    def getToolDescriptor(encodedWorkflowId: String, workflowVersion: String, descriptorType: String) = {
-      val value = "/api/api/ga4gh/v1/tools/#{encodedWorkflowId}/versions/#{workflowVersion}/#{descriptorType}/descriptor"
+    /**
+     * Requires session attributes encodedTrsId, version, and descriptorType be set
+     * @return
+     */
+    def getToolDescriptor() = {
+      val value = "/api/api/ga4gh/v1/tools/#{encodedTrsId}/versions/#{version}/#{descriptorType}/descriptor"
       http(s"Get ${value}")
         .get(value)
     }

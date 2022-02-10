@@ -70,8 +70,8 @@ class DockstoreWebUser extends Simulation {
     val terraDescriptorRequests: Int = calculateTerraDescriptorRequestsForScenario(terraRequestsRps, scenarioTimeInMinutes)
     val scenarioTimeDuration = Duration(scenarioTimeInMinutes.longValue(), "minute")
     val scenarios = ListBuffer(
-      terraVersionsScenario.inject(atOnceUsers(webSiteUsers)),
       terraDescriptorScenario.inject(rampUsers(terraDescriptorRequests).during(scenarioTimeDuration)),
+      terraVersionsScenario.inject(rampUsers(webSiteUsers).during(scenarioTimeDuration)),
       webUserScenario.inject(rampUsers(webSiteUsers).during(scenarioTimeDuration)),
       trsScenario.inject(rampUsers(trsRequestsForScenario).during(scenarioTimeDuration))
     )

@@ -3,7 +3,7 @@
  "_source": false,
  "query": {
   "match": {
-   "_index": "workflows"
+   "_type": "tool"
   }
  },
  "aggs": {
