@@ -42,7 +42,7 @@ set, otherwise it is skipped.
 
 #### Curator token and Installation Id
 
-The tests can invoke the `/workflows/github/release` endpoint, the one invoked indirectly invoked by GitHub Apps from
+The tests can invoke the `/workflows/github/release` endpoint, the same endpoint invoked indirectly invoked by GitHub Apps from
 AWS API Gateway, to simulate GitHub App notifications.
 
 ### Running the tests
