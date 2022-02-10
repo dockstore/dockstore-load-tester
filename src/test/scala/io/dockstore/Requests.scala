@@ -244,7 +244,7 @@ object Requests {
     }
 
     def githubRelease() = {
-      http("GitHub Release")
+      http("GitHub Release: #{repository}/#{gitReference}")
           .post("/api/workflows/github/release")
           .formParam("repository", "#{repository}")
           .formParam("username", "#{username}")
