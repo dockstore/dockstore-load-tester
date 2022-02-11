@@ -22,7 +22,7 @@ object WorkflowsPageSearch {
   val search = feed(searchTermFeeder).exec(
     Workflow.getPublished()
       .check(status is 200))
-    .pause(1)
+    .pause(1, 5)
     .exec(
       Workflow.getPublished("${term}")
         .check(status is 200)
@@ -41,34 +41,37 @@ object WorkflowsPageSearch {
         .check(status is 200)
     )
 
-    .exec(session => {
-      // Sometimes default version is not set; grab the first version in that case.
-      val hasVersion = (session("version").validate[String] != TypeHelper.NullValueFailure)
-      if (hasVersion) session else session.set("version", session("firstVersion").as[String])
-    })
+      .exec(session => {
+        // Sometimes default version is not set; grab the first version in that case.
+        val hasVersion = session("version").asOption[String].isDefined
+        if (hasVersion) session else session.set("version", session("firstVersion").as[String])
+      })
 
-    .exec(
-      MetaData.getDescriptorLanguageList
-        .resources(
-          Ga4gh2.getNflFiles("${fullWorkflowPath}", "${version}")
-            .check(status in(200, 204)),
-          Ga4gh2.getCwlFiles("${fullWorkflowPath}", "${version}")
-            .check(status in(200, 204)),
-          Ga4gh2.getWdlFiles("${fullWorkflowPath}", "${version}")
-            .check(status in(200, 204))
-        ))
-    .doIfEquals("${descriptorType}", "WDL") {
-      exec(
-        Workflow.getSecondaryWdl("${id}", "${version}")
+      // Handle the case for a workflow with no versions
+      .doIf("#{version.exists()}") {
+          exec(
+              MetaData.getDescriptorLanguageList
+                  .resources(
+                      Ga4gh2.getNflFiles("${fullWorkflowPath}", "${version}")
+                          .check(status in(200, 204)),
+                      Ga4gh2.getCwlFiles("${fullWorkflowPath}", "${version}")
+                          .check(status in(200, 204)),
+                      Ga4gh2.getWdlFiles("${fullWorkflowPath}", "${version}")
+                          .check(status in(200, 204))
+                  ))
+              .doIfEquals("${descriptorType}", "WDL") {
+                  exec(
+                      Workflow.getSecondaryWdl("${id}", "${version}")
+                  )
+              }
+      }
+
+      .exec(
+        Workflow.downloadWorkflowAsZip("${id}", "${versionId}")
+            .check(status in(200, 204)) // Some versions have no source files
       )
-    }
 
-    .exec(
-      Workflow.downloadWorkflowAsZip("${id}", "${versionId}")
-        .check(status in(200, 204)) // Some versions have no source files
-    )
-
-  doIf(session => session("token").validate[String] != TypeHelper.NullValueFailure) {
+  doIf(session => session("token").asOption[String].isDefined) {
     exec(
       User.getUser("${token}")
         .check(jsonPath("$.id").saveAs("userId"))

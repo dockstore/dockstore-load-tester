@@ -8,7 +8,7 @@
  },
  "aggs": {
   "tagcloud": {
-   "significant_terms": {
+   "significant_text": {
     "field": "description",
     "size": 20
    }

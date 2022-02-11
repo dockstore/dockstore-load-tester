@@ -43,8 +43,8 @@ object MyWorkflows {
           .check(status is 200)
       )
       .exec(session => {
-        // If default version is not set, grab the first version.
-        val hasVersion = (session("version").validate[String] != TypeHelper.NullValueFailure)
+          // If default version is not set, grab the first version.
+        val hasVersion = session("version").asOption[String].isDefined
         if (!hasVersion) session.set("version", session("firstVersion").as[String]) else session
       })
 

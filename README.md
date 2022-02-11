@@ -3,45 +3,58 @@
 # dockstore-load-tester
 Dockstore Load/Performance/Stress Tester
 
-## Running the tests
+### Requirements
 
-### Setup
+You need Java 11 and Maven installed.
 
-#### Tokens and Users
+To test, optionally, GitHub apps, you will need a GitHub app installation id, of a GitHub app installed for the Dockstore instance being
+tested, as well as a curator token.
 
-For authenticated endpoints, the tests use tokens that come from the file `data/dummyUsersAndTokens.csv`.
-Those users and tokens need to be in the Dockstore database. A SQL file, `dummyusers.sql`, will create
-the users and tokens. Direct access to the Dockstore database is required. Assuming Postgres is running in a Docker
-container named `postgres1`, execute the following:
+### Configuration
 
-```
-docker exec -i postgres1 psql webservice_test -U postgres < dummyusers.sql
-```
+You can configure the following properties with `-D`, e.g., `-DtimeInMinutes=5`. Defaults are in the `pom.xml`.
 
-Note: the `dummyusers.sql` was generated from `data/dummyUsersAndTokens.csv` 
-by `src/test/scala/io/dockstore/tools/UserGenerator.scala`; if you need to tweak the SQL you
-should modify the generator.
-
-### Run
-
-You can configure the following properties with `-D`, e.g., `-DauthUsers=50`. Defaults are in the `pom.xml`.
-
-* authUsers -- the number of authenticated users to simulate; defaults to 50
-* anonUsers -- the number of anonymous users to simulate; defaults to 50; only applies if scenario, below, is `Everything`
-* atOnce -- true if all users should hit at once, or if they should ramp up over time; defaults to false
-* rampMinutes -- if `atOnce` is not true, the number of minutes the specified number of users will be phased in; defaults to 5
-* baseUrl -- the Dockstore webservice endpoint to run the tests against; defaults to `http://localhost:8080`
-* scenario -- the name of the scenario to run; see DockstoreWebUser.scala for all available; defaults to `Everything`, which runs (almost) everything
+* baseUrl -- the Dockstore webservice endpoint to run the tests against; defaults to `http://localhost:4200`
+* timeInMinutes -- how many minutes to run the simulation
+* terraRequestsRps -- the number of requests per second by Terra
+* webSiteUsers -- the number of website users
+* trsRequestsPerHour -- the number of requests to fetch TRS tools per hour
+* githubNotificationsPerHour -- the number of GitHub app notifications per hour
+* installationId -- a GitHub installation ID 
+* curatorToken -- A Dockstore curator's token
 * maxResponseTimeMs -- if any API call takes longer than this, simulation will fail; default is 10,000, which is probably too high
 * successThreshold -- the percentage of calls that should pass; if less, the simulation fails; default is 95
-* percentToPublish -- the percentage of workflows created in the `HostedWorkflowCrud` scenario that will be published; the default is 25
 
-Regarding the last two items, the tests will still run to completion; if there is failure, there will a message so indicating at the end.
+Regarding the last two items:
 
-The default values are defined in the `<properties>` section of the pom.xml.
+1. The tests will still run to completion regardless; if there are failures, there will a message so indicating at the end.
+2. At lower loads, the tests will typically all pass (TRS ones may time out on a local instance); failures start happening when the load 
+becomes too high.
+
+#### Simulation Scenarios
+
+1. Terra Requests: Simulates a workflow running in Terra, that fetches the primary descriptor. The rate is controlled by the `terraRequestsRps` property, defaults to 8 per second. Fetches a WDL descriptor files that are specified in `data/workflows.csv`.
+2. Terra Version: Fetches a descriptor's versions, currently controlled by `webSiteUsers` (a Terra workflow run fetches a descriptor's versions a couple of times)
+3. Web site users: Simulates a non-authorized user going through the web site, home page, search, go to a workflow, download its zip. The number of users, controlled by the `webSiteUsers` property, is spread out over the duration of the run. It defaults to 6.
+4. Trs : Simulates requests being made to fetch all TRS tools and then fetching a tool, using both TRS v1 and v2. And makes the calls Galaxy search uses. Controlled by `trsRequestsPerHour`. 
+5. GitHub Notifications - Invokes the GitHub release API. Invokes them against the repositories in `data/githubRefresh.csv`. Note this scenario will only be run if `installationId` and `curatorToken` are both
+set, otherwise it is skipped.
+
+#### Curator token and Installation Id
+
+The tests can invoke the `/workflows/github/release` endpoint, the same endpoint invoked indirectly invoked by GitHub Apps from
+AWS API Gateway, to simulate GitHub App notifications.
+
+### Running the tests
 
 ```bash
 mvn clean test-compile gatling:test
+```
+
+To increase the number of web site users to 20 and decrease the run time to 1 minute:
+
+```bash
+mvn clean test-compile gatling:test -DwebSiteUsers=20 -DtimeInMinutes=1
 ```
 
 #### Results
@@ -57,31 +70,21 @@ format.
 
 ### Comparing Results
 
-The GitHub release has a gatling-report-3.0 JAR that you can use to compare different runs.
+Gatling report lets you compare runs. Get it from: https://maven-eu.nuxeo.org/nexus/#nexus-search;quick~gatling-report. Note that on Feb 8,
+the site's certificate has expired, so if that's still an issue, build it from the GitHub [repo](https://github.com/nuxeo/gatling-report).
 
 ```bash
-java -jar gatling-report-3.0-SNAPSHOT-capsule-fat.jar target/gatling/dockstorewebuser-20181109062654032/simulation.log \
+java -jar gatling-report-6.0-capsule-fat.jar target/gatling/dockstorewebuser-20181109062654032/simulation.log \
     target/gatling/dockstorewebuser-20181113210759185/simulation.log \
     -o newdirectory
 ```
 
 This will generate a newdirectory/index.html file, which you can open in the browser to get a view like this ![nuxeo screenshot](nuxeo-screenshot.png).
 
-#### Where the JAR came from, and why
-
-The JAR is built locally from 
-[https://github.com/coverbeck/gatling-report/tree/gatling_3_0_support](https://github.com/coverbeck/gatling-report/tree/gatling_3_0_support),
-a fork of [https://github.com/nuxeo/gatling-report](https://github.com/nuxeo/gatling-report). It is forked because
-the nuxeo code currently does not work with Gatling 3.0 simulation.log files. A [PR](https://github.com/nuxeo/gatling-report/pull/14) has
-been submitted to fix this, but until it is merged and an "official" release can be downloaded, we are attaching the binary to the
-GitHub Release.
-
-Alternatively, you can clone [https://github.com/coverbeck/gatling-report](https://github.com/coverbeck/gatling-report), checkout
-the gatling_3_0_support branch, run `mvn clean package`, and use the generated JAR. 
 
 ## Tips
 
-Figuring JSON paths can be tricky. I find [this site](http://jsonpath.herokuapp.com/) useful in interactively figuring out the
+Figuring JSON paths can be tricky. I find [this site](https://jsonpath.herokuapp.com/) useful in interactively figuring out the
 expression.
 
 For debugging, look at the file `logback-test.xml`. Here you can choose between printing the logs of only failed or all HTTP requests to the console.
@@ -92,8 +95,8 @@ For debugging, look at the file `logback-test.xml`. Here you can choose between 
    1. For simulating web users, I assume the caching is done
 on a per-user basis, which is what we would want, as the browser would cache requests based on headers. Need to verify.
    2. For simulating API calls, we probably want to disable caching, as HTTP client libraries don't do that, AFAIK.
+1. Make all inputs external, at least optionally, so that if you change a CSV file, you don't need to rebuild.
 1. SearchPage only searches one term, author. Ideally would do more complex searches.
-1. Doesn't test integration with external repos, e.g., refreshing from GitHub
 1. Add checks for things that take too long. This is done globally and is configurable, but should maybe add checks
 for certain key APIs.
 1. Figure out creating hosted tools test. Problem is that I cannot generate a unique name for the tools like I can for workflows.

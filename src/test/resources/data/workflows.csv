@@ -1,0 +1,3 @@
+trsId,version,descriptorType
+#workflow/github.com/gatk-workflows/seq-format-conversion/BAM-to-Unmapped-BAM,3.0.0,WDL
+#workflow/github.com/broadinstitute/viral-pipelines/assemble_refbased,v2.1.8.0,WDL

@@ -1,0 +1,3 @@
+repository,gitReference,username,expectedStatus
+DataBiosphere/analysis_pipeline_WDL,refs/tags/v7.0.0,coverbeck,204
+dockstore/lambda,refs/heads/develop,coverbeck,418
