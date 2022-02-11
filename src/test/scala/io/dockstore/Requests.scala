@@ -146,7 +146,7 @@ object Requests {
   object Workflow {
     def getPublishedWorkflow(repo: String) = {
       http("Published Worfklow")
-        .get(s"/api/workflows/path/workflow/${repo}/published?services=false")
+        .get(s"/api/workflows/path/workflow/${repo}/published?subclass=BIOWORKFLOW")
     }
 
     def getStarredUsers(workflowId: String) = {
