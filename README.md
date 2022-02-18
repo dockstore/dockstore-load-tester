@@ -5,7 +5,7 @@ Dockstore Load/Performance/Stress Tester
 
 ### Requirements
 
-You need Java 11 and Maven installed.
+You need Java 11 installed.
 
 To test, optionally, GitHub apps, you will need a GitHub app installation id, of a GitHub app installed for the Dockstore instance being
 tested, as well as a curator token.
@@ -48,13 +48,13 @@ AWS API Gateway, to simulate GitHub App notifications.
 ### Running the tests
 
 ```bash
-mvn clean test-compile gatling:test
+./mvnw clean test-compile gatling:test
 ```
 
 To increase the number of web site users to 20 and decrease the run time to 1 minute:
 
 ```bash
-mvn clean test-compile gatling:test -DwebSiteUsers=20 -DtimeInMinutes=1
+./mvnw clean test-compile gatling:test -DwebSiteUsers=20 -DtimeInMinutes=1
 ```
 
 #### Results
