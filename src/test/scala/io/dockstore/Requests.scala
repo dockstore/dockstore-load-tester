@@ -103,6 +103,16 @@ object Requests {
       if (token != null && !token.isEmpty) builder.headers(authHeader(token)) else builder
     }
 
+    /**
+     * Requires session attributes encodedTrsId, version, and descriptorType be set
+     * @return
+     */
+
+    def getPlainDescriptor() = {
+      val path = "/api/api/ga4gh/v2/tools/#{encodedTrsId}/versions/#{version}/PLAIN_#{descriptorType}/descriptor"
+      http(s"Get ${path}").get(path)
+    }
+
     def getMetadata = {
       http("Get metatdata")
         .get("/api/api/ga4gh/v2/metadata")

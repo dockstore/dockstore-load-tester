@@ -26,6 +26,8 @@
         <trsRequestsPerHour>6</trsRequestsPerHour>
         <!-- The number of GitHub notifications per hour -->
         <githubNotificationsPerHour>2</githubNotificationsPerHour>
+        <!-- Crawler requests -->
+        <crawlerRequestsRps>4</crawlerRequestsRps>
 
         <maxResponseTimeMs>10000</maxResponseTimeMs>
         <successThreshold>95</successThreshold>
@@ -122,6 +124,7 @@
                         <jvmArg>-DwebSiteUsers=${webSiteUsers}</jvmArg>
                         <jvmArg>-DtrsRequestsPerHour=${trsRequestsPerHour}</jvmArg>
                         <jvmArg>-DgithubNotificationsPerHour=${githubNotificationsPerHour}</jvmArg>
+                        <jvmArg>-DcrawlerRequestsRps=${crawlerRequestsRps}</jvmArg>
                     </jvmArgs>
                 </configuration>
             </plugin>

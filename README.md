@@ -17,6 +17,7 @@ You can configure the following properties with `-D`, e.g., `-DtimeInMinutes=5`.
 * baseUrl -- the Dockstore webservice endpoint to run the tests against; defaults to `http://localhost:4200`
 * timeInMinutes -- how many minutes to run the simulation
 * terraRequestsRps -- the number of requests per second by Terra
+* crawlerRequestsRps -- the number of crawler requests per second
 * webSiteUsers -- the number of website users
 * trsRequestsPerHour -- the number of requests to fetch TRS tools per hour
 * githubNotificationsPerHour -- the number of GitHub app notifications per hour
@@ -24,6 +25,7 @@ You can configure the following properties with `-D`, e.g., `-DtimeInMinutes=5`.
 * curatorToken -- A Dockstore curator's token
 * maxResponseTimeMs -- if any API call takes longer than this, simulation will fail; default is 10,000, which is probably too high
 * successThreshold -- the percentage of calls that should pass; if less, the simulation fails; default is 95
+* scenario -- the name of a specific scenario to run; if not specified, runs all scenarios
 
 Regarding the last two items:
 
@@ -33,7 +35,7 @@ becomes too high.
 
 #### Simulation Scenarios
 
-1. Terra Requests: Simulates a workflow running in Terra, that fetches the primary descriptor. The rate is controlled by the `terraRequestsRps` property, defaults to 8 per second. Fetches a WDL descriptor files that are specified in `data/workflows.csv`.
+1. Terra Requests: Simulates a workflow running in Terra, that fetches the primary descriptor. The rate is controlled by the `terraRequestsRps` property, defaults to 4 per second. Fetches a WDL descriptor files that are specified in `data/workflows.csv`.
 2. Terra Version: Fetches a descriptor's versions, currently controlled by `webSiteUsers` (a Terra workflow run fetches a descriptor's versions a couple of times)
 3. Web site users: Simulates a non-authorized user going through the web site, home page, search, go to a workflow, download its zip. The number of users, controlled by the `webSiteUsers` property, is spread out over the duration of the run. It defaults to 6.
 4. Trs : Simulates requests being made to fetch all TRS tools and then fetching a tool, using both TRS v1 and v2. And makes the calls Galaxy search uses. Controlled by `trsRequestsPerHour`. 
@@ -55,6 +57,12 @@ To increase the number of web site users to 20 and decrease the run time to 1 mi
 
 ```bash
 ./mvnw clean test-compile gatling:test -DwebSiteUsers=20 -DtimeInMinutes=1
+```
+
+To run the crawler scenario for 10 minutes:
+
+```bash
+clean test-compile gatling:test -Dscenario=CrawlerScenario -DtimeInMinutes=10
 ```
 
 #### Results
