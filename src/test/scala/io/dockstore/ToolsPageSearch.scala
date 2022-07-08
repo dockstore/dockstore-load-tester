@@ -1,6 +1,6 @@
 package io.dockstore
 
-import io.dockstore.Requests.{Container, Ga4gh2, MetaData}
+import io.dockstore.Requests.{Container, Ga4gh2Beta, MetaData}
 import io.gatling.commons.util.TypeHelper
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
@@ -21,7 +21,7 @@ object ToolsPageSearch {
 
   val search = feed(searchTermFeeder)
       .exec(
-        Ga4gh2.getMetadata
+        Ga4gh2Beta.getMetadata
             .resources(Container.getPublishedContainers()))
       .pause(13)
 
@@ -46,11 +46,11 @@ object ToolsPageSearch {
               .check(status is 200)
               .resources(MetaData.getDescriptorLanguageList
                   .check(status is 200),
-                Ga4gh2.getNflFiles("${tool_path}", "${version}")
+                Ga4gh2Beta.getNflFiles("${tool_path}", "${version}")
                     .check(status in(200, 204)),
-                Ga4gh2.getWdlFiles("${tool_path}", "${version}")
+                Ga4gh2Beta.getWdlFiles("${tool_path}", "${version}")
                     .check(status in(200, 204)),
-                Ga4gh2.getCwlFiles("${tool_path}", "${version}")
+                Ga4gh2Beta.getCwlFiles("${tool_path}", "${version}")
                     .check(status in(200, 204)),
                 Container.getContainerStarredUsers("${id}")
                     .check(status is 200),

@@ -1,6 +1,6 @@
 package io.dockstore
 
-import io.dockstore.Requests.{Ga4gh2, MetaData, User, Workflow}
+import io.dockstore.Requests.{Ga4gh2Beta, MetaData, User, Workflow}
 import io.gatling.commons.util.TypeHelper
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
@@ -52,11 +52,11 @@ object WorkflowsPageSearch {
           exec(
               MetaData.getDescriptorLanguageList
                   .resources(
-                      Ga4gh2.getNflFiles("${fullWorkflowPath}", "${version}")
+                      Ga4gh2Beta.getNflFiles("${fullWorkflowPath}", "${version}")
                           .check(status in(200, 204)),
-                      Ga4gh2.getCwlFiles("${fullWorkflowPath}", "${version}")
+                      Ga4gh2Beta.getCwlFiles("${fullWorkflowPath}", "${version}")
                           .check(status in(200, 204)),
-                      Ga4gh2.getWdlFiles("${fullWorkflowPath}", "${version}")
+                      Ga4gh2Beta.getWdlFiles("${fullWorkflowPath}", "${version}")
                           .check(status in(200, 204))
                   ))
               .doIfEquals("${descriptorType}", "WDL") {

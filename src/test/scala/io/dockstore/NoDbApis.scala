@@ -6,7 +6,7 @@ import io.gatling.http.Predef._
 object NoDbApis {
 
   val simple = exec(
-    Requests.Ga4gh2.getMetadata
+    Requests.Ga4gh2Beta.getMetadata
       .check(status is 200)
   ).exec(
     Requests.MetaData.getSourceControlList

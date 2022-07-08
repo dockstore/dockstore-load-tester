@@ -1,0 +1,11 @@
+trsId,version,descriptorType
+#workflow/github.com/broadinstitute/gatk/Funcotator,4.2.0.0,WDL
+#workflow/github.com/broadinstitute/gatk/mutect2_pon,4.1.8.1,WDL
+#workflow/github.com/broadinstitute/gatk/mutect2,4.1.8.1,WDL
+#workflow/github.com/broadinstitute/gatk/cnv_germline_cohort_workflow,4.1.6.0,WDL
+#workflow/github.com/broadinstitute/gatk/pathseq_pipeline,4.1.6.0,WDL
+#workflow/github.com/broadinstitute/gatk/MitochondriaPipeline,master,WDL
+#workflow/github.com/broadinstitute/gatk/cnv_germline_case_workflow,4.1.5.0,WDL
+#workflow/github.com/broadinstitute/gatk/cram2model,4.1.6.0,WDL
+#workflow/github.com/broadinstitute/gatk/run_happy,4.1.6.0,WDL
+#workflow/github.com/broadinstitute/gatk/cram2filtered,4.1.7.0,WDL

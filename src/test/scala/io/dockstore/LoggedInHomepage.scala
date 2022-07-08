@@ -1,6 +1,6 @@
 package io.dockstore
 
-import io.dockstore.Requests.{Ga4gh2, MetaData, Notification, User}
+import io.dockstore.Requests.{Ga4gh2Beta, MetaData, Notification, User}
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
@@ -21,7 +21,7 @@ object LoggedInHomepage {
                     .check(status is 200)
             )
             .exec(
-                Ga4gh2.getMetadata
+                Ga4gh2Beta.getMetadata
                     .check(status is 200)
             )
             .exec(

@@ -1,12 +1,9 @@
 package io.dockstore
 
-import io.dockstore
 import io.dockstore.DockstoreWebUser.{CURATOR_TOKEN, INSTALLATION_ID}
 import io.gatling.core.Predef._
 import io.gatling.core.structure.{PopulationBuilder, ScenarioBuilder}
 
-import scala.::
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -30,21 +27,27 @@ class DockstoreWebUser extends Simulation {
   val maxResponseTimeMs = Integer.getInteger("maxResponseTimeMs", defaultMaxResponseTimeMs)
   val successThreshold = Integer.getInteger("successThreshold", 95).doubleValue()
   val terraRequestsRps = Integer.getInteger("terraRequestsRps")
+  val crawlerRequestsRps = Integer.getInteger("crawlerRequestsRps")
   val webSiteUsers = Integer.getInteger("webSiteUsers")
   val gitHubAppRpm = Integer.getInteger("githubNotificationsPerHour")
   val trsRequestsPerHour = Integer.getInteger("trsRequestsPerHour")
   val githubNotificationsPerHour = Integer.getInteger("githubNotificationsPerHour")
   val workflowRunsFeeder = csv("data/workflows.csv").circular
+  val crawlerFeeder = csv("data/crawler.csv").circular
   val gitHubAppFeeder = csv("data/githubRefresh.csv").circular
 
   val terraFetchingDescriptors = "TerraFetchingDescriptors"
   val terraWorkflowVersions = "TerraFetchingVersions"
+  val crawlerScenarioName = "CrawlerScenario"
 
   val terraDescriptorScenario: ScenarioBuilder = scenario(terraFetchingDescriptors).feed(workflowRunsFeeder).exec(
     Terra.fetchDescriptor
   )
   val terraVersionsScenario: ScenarioBuilder = scenario(terraWorkflowVersions).feed(workflowRunsFeeder).exec(
     Terra.fetchWorkflowVersions
+  )
+  val crawlerScenario: ScenarioBuilder = scenario(crawlerScenarioName).feed(crawlerFeeder).exec(
+    Crawler.fetchDescriptor
   )
   val webUserScenario: ScenarioBuilder = scenario("Web User").exec(
     HomePage.loggedOutHomePage,
@@ -55,19 +58,19 @@ class DockstoreWebUser extends Simulation {
   )
   val trsScenario: ScenarioBuilder = scenario("TRS").exec(TRS.searchAndDrillDown)
 
-
   private def calculateRequestsForScenario(requestsPerHour: Int, testTime: Int): Int = {
     requestsPerHour * ((testTime / 60) + 1)
   }
 
-  private def calculateTerraDescriptorRequestsForScenario(terraRequestsRps: Int, testTimeInMinutes: Int) = {
-    terraRequestsRps * 60 * testTimeInMinutes
+  private def calculateTotalRequests(requestsPerSecond: Int, testTimeInMinutes: Int) = {
+    requestsPerSecond * 60 * testTimeInMinutes
   }
 
   private def getScenarios() = {
     val scenarioTimeInMinutes = Integer.getInteger("timeInMinutes")
     val trsRequestsForScenario = calculateRequestsForScenario(trsRequestsPerHour, scenarioTimeInMinutes)
-    val terraDescriptorRequests: Int = calculateTerraDescriptorRequestsForScenario(terraRequestsRps, scenarioTimeInMinutes)
+    val terraDescriptorRequests: Int = calculateTotalRequests(terraRequestsRps, scenarioTimeInMinutes)
+    val crawlerRequests = calculateTotalRequests(crawlerRequestsRps, scenarioTimeInMinutes)
     val scenarioTimeDuration = Duration(scenarioTimeInMinutes.longValue(), "minute")
     val scenarios = ListBuffer(
       terraDescriptorScenario.inject(rampUsers(terraDescriptorRequests).during(scenarioTimeDuration)),
@@ -81,7 +84,11 @@ class DockstoreWebUser extends Simulation {
       scenarios += workflowRefreshScenario.inject(
         rampUsers(calculateRequestsForScenario(gitHubAppRpm, scenarioTimeInMinutes)).during(scenarioTimeDuration))
     }
-    scenarios.toList
+    // Crawler data is currently staging-biased
+    if (baseUrl.contains("staging")) scenarios += crawlerScenario.inject(rampUsers(crawlerRequests).during(scenarioTimeDuration))
+    val scenarioName = System.getProperty("scenario")
+    if (scenarioName != null) scenarios.find(_.scenarioBuilder.name == scenarioName).toList
+    else scenarios.toList
   }
 
   // Set a header so the AWS WAF doesn't block requests
