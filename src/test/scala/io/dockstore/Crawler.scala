@@ -1,6 +1,6 @@
 package io.dockstore
 
-import io.dockstore.Requests.Ga4gh2
+import io.dockstore.Requests.Ga4gh2Final
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
@@ -12,7 +12,7 @@ object Crawler extends BaseDescriptorFetcher {
     val fetchDescriptor = {
         exec(session => encodeTrsId(session))
             .exec(
-                Ga4gh2.getPlainDescriptor()
+                Ga4gh2Final.getPlainDescriptor()
                     .check(status is 200)
 
             )

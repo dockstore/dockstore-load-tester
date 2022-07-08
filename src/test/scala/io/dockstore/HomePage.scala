@@ -1,6 +1,6 @@
 package io.dockstore
 
-import io.dockstore.Requests.{Categories, Container, Curation, Ga4gh2, MetaData}
+import io.dockstore.Requests.{Categories, Container, Curation, Ga4gh2Beta, MetaData}
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 
@@ -15,7 +15,7 @@ object HomePage {
         .headers(Map("Accept" -> "text/html"))
         .check(status is 200)
         .resources(
-          Ga4gh2.getMetadata.check(status is 200),
+          Ga4gh2Beta.getMetadata.check(status is 200),
           MetaData.getConfigJson.check(status is 200),
           Curation.getNotifications.check(status is 200),
           // 1.12 only

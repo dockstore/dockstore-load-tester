@@ -84,7 +84,19 @@ object Requests {
     }
   }
 
-  object Ga4gh2 {
+  object Ga4gh2Final {
+    /**
+     * Requires session attributes encodedTrsId, version, and descriptorType be set
+     * @return
+     */
+
+    def getPlainDescriptor() = {
+      val path = "/api/ga4gh/trs/v2/tools/#{encodedTrsId}/versions/#{version}/PLAIN_#{descriptorType}/descriptor"
+      http(s"Get ${path}").get(path)
+    }
+  }
+
+  object Ga4gh2Beta {
     def getNflFiles(toolPath: String, version: String, token: String = null) = {
       val builder = http("Get NFL files")
         .get(s"/api/api/ga4gh/v2/tools/${toolPath}/versions/${version}/NFL/files")
@@ -103,15 +115,6 @@ object Requests {
       if (token != null && !token.isEmpty) builder.headers(authHeader(token)) else builder
     }
 
-    /**
-     * Requires session attributes encodedTrsId, version, and descriptorType be set
-     * @return
-     */
-
-    def getPlainDescriptor() = {
-      val path = "/api/api/ga4gh/v2/tools/#{encodedTrsId}/versions/#{version}/PLAIN_#{descriptorType}/descriptor"
-      http(s"Get ${path}").get(path)
-    }
 
     def getMetadata = {
       http("Get metatdata")
