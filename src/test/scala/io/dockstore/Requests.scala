@@ -96,6 +96,20 @@ object Requests {
     }
   }
 
+  object ExtendedGa4gh {
+    /**
+     * Posts an execution, expects encodedTrsId, encodedVersion, executionId to be set in the session
+     * @return
+     */
+    def postExecution() = {
+      http("Post execution")
+          .post(s"/api/api/ga4gh/v2/extended/#{encodedTrsId}/versions/#{encodedVersion}/executions?platform=TERRA")
+          .headers(authHeader(System.getProperty(DockstoreWebUser.CURATOR_TOKEN)))
+          .body(ElFileBody("bodies/executions/Execution.json")).asJson
+
+    }
+  }
+
   object Ga4gh2Beta {
     def getNflFiles(toolPath: String, version: String, token: String = null) = {
       val builder = http("Get NFL files")

@@ -62,7 +62,7 @@ To increase the number of web site users to 20 and decrease the run time to 1 mi
 To run the crawler scenario for 10 minutes:
 
 ```bash
-clean test-compile gatling:test -Dscenario=CrawlerScenario -DtimeInMinutes=10
+./mvnw clean test-compile gatling:test -Dscenario=CrawlerScenario -DtimeInMinutes=10
 ```
 
 #### Results
