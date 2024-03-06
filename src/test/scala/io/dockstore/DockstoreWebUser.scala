@@ -38,11 +38,11 @@ class DockstoreWebUser extends Simulation {
   val gitHubAppRpm = Integer.getInteger("githubNotificationsPerHour")
   val trsRequestsPerHour = Integer.getInteger("trsRequestsPerHour")
   val githubNotificationsPerHour = Integer.getInteger("githubNotificationsPerHour")
-  val metricsRequestPerMinute = Integer.getInteger("metricsRequestsPerMinute").toInt
+  val maxMetricsRPS = Integer.getInteger("maxMetricsRPS").toInt
   val workflowRunsFeeder = csv("data/workflows.csv").circular
   val crawlerFeeder = csv("data/crawler.csv").circular
   val gitHubAppFeeder = csv("data/githubRefresh.csv").circular
-  val executionsFeeder = csv("data/cwlPublishedVersions.csv").circular
+  val executionsFeeder = csv("data/publishedVersions.csv").circular
 
   val terraFetchingDescriptors = "TerraFetchingDescriptors"
   val terraWorkflowVersions = "TerraFetchingVersions"
@@ -92,8 +92,7 @@ class DockstoreWebUser extends Simulation {
     )
 
     if (System.getProperty(CURATOR_TOKEN) != null) {
-      val totalExecutionRequests = (scenarioTimeInMinutes * metricsRequestPerMinute)
-      scenarios += executionsScenario.inject(rampUsersPerSec(1).to(totalExecutionRequests).during(scenarioTimeDuration))
+      scenarios += executionsScenario.inject(rampUsersPerSec(1).to(maxMetricsRPS).during(scenarioTimeDuration))
       // If we have a token and an installation id, do the workflow refreshes
       if (System.getProperty(INSTALLATION_ID) != null) {
         val workflowRefreshScenario = scenario("Workflow Refresh").feed(gitHubAppFeeder).exec(WorkflowRefresh.gitHubApp)
