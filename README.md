@@ -5,7 +5,9 @@ Dockstore Load/Performance/Stress Tester
 
 ### Requirements
 
-You need Java 11 installed.
+Running the tests works with Java 17. It's not working with Java 21, I haven't looked into why.
+
+Running the comparison tool, gatling-report-6.0-capsule-fat.jar, seems to require Java 8 (maybe it works with 11, I don't have it installed).
 
 To test, optionally, GitHub apps, you will need a GitHub app installation id, of a GitHub app installed for the Dockstore instance being
 tested, as well as a curator token.
@@ -63,6 +65,20 @@ To run the crawler scenario for 10 minutes:
 
 ```bash
 ./mvnw clean test-compile gatling:test -Dscenario=CrawlerScenario -DtimeInMinutes=10
+```
+
+### Running Execution Metrics Test
+
+There is a Maven profile to make this easier. The arguments you can tweak are `timeInMinutes`, the duration of the test, and `maxMetricsRPS`,
+which is the maximum requests per second. This test evenly ramps up from 1 request per second to `maxMetricsRPS`, e.g., if the test duration is 10
+minutes and the max requests per second is 100, at 1 minute into the test it will execute 10rps, at 5 minutes in, it will execute 50rps, etc.
+
+The publishedVersions.csv was compiled by fetching published workflows via the TRS API (nothing secret), although it's possible not all workflows
+will be in all Dockstore environments, and/or some workflows might get unpublished, so some 404s might happen. The file was getting too
+large for GitHub, so it's a subset of published workflows.
+
+```bash
+./mvnw clean test-compile gatling:test -P execution-metrics -DcuratorToken=$curatorToken -DtimeInMinutes=6 -DmaxMetricsRPS=30
 ```
 
 #### Results
