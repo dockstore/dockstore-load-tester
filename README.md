@@ -82,6 +82,7 @@ Gatling report lets you compare runs. Get it from: https://maven-eu.nuxeo.org/ne
 the site's certificate has expired, so if that's still an issue, build it from the GitHub [repo](https://github.com/nuxeo/gatling-report).
 
 ```bash
+# This version of Gatling needs to be run with Java 8.
 java -jar gatling-report-6.0-capsule-fat.jar target/gatling/dockstorewebuser-20181109062654032/simulation.log \
     target/gatling/dockstorewebuser-20181113210759185/simulation.log \
     -o newdirectory
