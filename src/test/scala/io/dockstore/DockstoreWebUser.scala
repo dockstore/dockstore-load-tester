@@ -2,6 +2,7 @@ package io.dockstore
 
 import io.dockstore.DockstoreWebUser.{CURATOR_TOKEN, INSTALLATION_ID}
 import io.gatling.core.Predef._
+import io.gatling.http.Predef._
 import io.gatling.core.structure.{PopulationBuilder, ScenarioBuilder}
 
 import scala.collection.mutable.ListBuffer
@@ -22,6 +23,11 @@ import scala.language.postfixOps
   */
 class DockstoreWebUser extends Simulation {
 
+  /* Place for arbitrary Scala code that is to be executed after the simulation has ended. */
+  after {
+    println("***** My simulation has ended! ******")
+  }
+
   val defaultMaxResponseTimeMs  = Duration(10, "second").toMillis.toInt
   val baseUrl = System.getProperty("baseUrl", "http://localhost:4200")
   val maxResponseTimeMs = Integer.getInteger("maxResponseTimeMs", defaultMaxResponseTimeMs)
@@ -32,13 +38,16 @@ class DockstoreWebUser extends Simulation {
   val gitHubAppRpm = Integer.getInteger("githubNotificationsPerHour")
   val trsRequestsPerHour = Integer.getInteger("trsRequestsPerHour")
   val githubNotificationsPerHour = Integer.getInteger("githubNotificationsPerHour")
+  val maxMetricsRPS = Integer.getInteger("maxMetricsRPS").toInt
   val workflowRunsFeeder = csv("data/workflows.csv").circular
   val crawlerFeeder = csv("data/crawler.csv").circular
   val gitHubAppFeeder = csv("data/githubRefresh.csv").circular
+  val executionsFeeder = csv("data/publishedVersions.csv").circular
 
   val terraFetchingDescriptors = "TerraFetchingDescriptors"
   val terraWorkflowVersions = "TerraFetchingVersions"
   val crawlerScenarioName = "CrawlerScenario"
+  val executionsScenarioName ="ExecutionsScenario"
 
   val terraDescriptorScenario: ScenarioBuilder = scenario(terraFetchingDescriptors).feed(workflowRunsFeeder).exec(
     Terra.fetchDescriptor
@@ -57,6 +66,9 @@ class DockstoreWebUser extends Simulation {
     ToolsPageSearch.search
   )
   val trsScenario: ScenarioBuilder = scenario("TRS").exec(TRS.searchAndDrillDown)
+  val executionsScenario = scenario(executionsScenarioName).feed(executionsFeeder).exec(
+    Executions.postExecution
+  )
 
   private def calculateRequestsForScenario(requestsPerHour: Int, testTime: Int): Int = {
     requestsPerHour * ((testTime / 60) + 1)
@@ -67,7 +79,7 @@ class DockstoreWebUser extends Simulation {
   }
 
   private def getScenarios() = {
-    val scenarioTimeInMinutes = Integer.getInteger("timeInMinutes")
+    val scenarioTimeInMinutes = Integer.getInteger("timeInMinutes").toInt
     val trsRequestsForScenario = calculateRequestsForScenario(trsRequestsPerHour, scenarioTimeInMinutes)
     val terraDescriptorRequests: Int = calculateTotalRequests(terraRequestsRps, scenarioTimeInMinutes)
     val crawlerRequests = calculateTotalRequests(crawlerRequestsRps, scenarioTimeInMinutes)
@@ -78,11 +90,15 @@ class DockstoreWebUser extends Simulation {
       webUserScenario.inject(rampUsers(webSiteUsers).during(scenarioTimeDuration)),
       trsScenario.inject(rampUsers(trsRequestsForScenario).during(scenarioTimeDuration))
     )
-    // If we have a token and an installation id, do the workflow refreshes
-    if (System.getProperty(INSTALLATION_ID) != null && System.getProperty(CURATOR_TOKEN) != null) {
-      val workflowRefreshScenario = scenario("Workflow Refresh").feed(gitHubAppFeeder).exec(WorkflowRefresh.gitHubApp)
-      scenarios += workflowRefreshScenario.inject(
-        rampUsers(calculateRequestsForScenario(gitHubAppRpm, scenarioTimeInMinutes)).during(scenarioTimeDuration))
+
+    if (System.getProperty(CURATOR_TOKEN) != null) {
+      scenarios += executionsScenario.inject(rampUsersPerSec(1).to(maxMetricsRPS).during(scenarioTimeDuration))
+      // If we have a token and an installation id, do the workflow refreshes
+      if (System.getProperty(INSTALLATION_ID) != null) {
+        val workflowRefreshScenario = scenario("Workflow Refresh").feed(gitHubAppFeeder).exec(WorkflowRefresh.gitHubApp)
+        scenarios += workflowRefreshScenario.inject(
+          rampUsers(calculateRequestsForScenario(gitHubAppRpm, scenarioTimeInMinutes)).during(scenarioTimeDuration))
+      }
     }
     // Crawler data is currently staging-biased
     if (baseUrl.contains("staging")) scenarios += crawlerScenario.inject(rampUsers(crawlerRequests).during(scenarioTimeDuration))

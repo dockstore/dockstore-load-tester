@@ -5,7 +5,9 @@ Dockstore Load/Performance/Stress Tester
 
 ### Requirements
 
-You need Java 11 installed.
+Running the tests works with Java 17. It's not working with Java 21, I haven't looked into why.
+
+Running the comparison tool, gatling-report-6.0-capsule-fat.jar, seems to require Java 8 (maybe it works with 11, I don't have it installed).
 
 To test, optionally, GitHub apps, you will need a GitHub app installation id, of a GitHub app installed for the Dockstore instance being
 tested, as well as a curator token.
@@ -62,7 +64,21 @@ To increase the number of web site users to 20 and decrease the run time to 1 mi
 To run the crawler scenario for 10 minutes:
 
 ```bash
-clean test-compile gatling:test -Dscenario=CrawlerScenario -DtimeInMinutes=10
+./mvnw clean test-compile gatling:test -Dscenario=CrawlerScenario -DtimeInMinutes=10
+```
+
+### Running Execution Metrics Test
+
+There is a Maven profile to make this easier. The arguments you can tweak are `timeInMinutes`, the duration of the test, and `maxMetricsRPS`,
+which is the maximum requests per second. This test evenly ramps up from 1 request per second to `maxMetricsRPS`, e.g., if the test duration is 10
+minutes and the max requests per second is 100, at 1 minute into the test it will execute 10rps, at 5 minutes in, it will execute 50rps, etc.
+
+The publishedVersions.csv was compiled by fetching published workflows via the TRS API (nothing secret), although it's possible not all workflows
+will be in all Dockstore environments, and/or some workflows might get unpublished, so some 404s might happen. The file was getting too
+large for GitHub, so it's a subset of published workflows.
+
+```bash
+./mvnw clean test-compile gatling:test -P execution-metrics -DcuratorToken=$curatorToken -DtimeInMinutes=6 -DmaxMetricsRPS=30
 ```
 
 #### Results
@@ -82,6 +98,7 @@ Gatling report lets you compare runs. Get it from: https://maven-eu.nuxeo.org/ne
 the site's certificate has expired, so if that's still an issue, build it from the GitHub [repo](https://github.com/nuxeo/gatling-report).
 
 ```bash
+# This version of Gatling needs to be run with Java 8.
 java -jar gatling-report-6.0-capsule-fat.jar target/gatling/dockstorewebuser-20181109062654032/simulation.log \
     target/gatling/dockstorewebuser-20181113210759185/simulation.log \
     -o newdirectory

@@ -28,6 +28,7 @@
         <githubNotificationsPerHour>2</githubNotificationsPerHour>
         <!-- Crawler requests -->
         <crawlerRequestsRps>4</crawlerRequestsRps>
+        <maxMetricsRPS>100</maxMetricsRPS>
 
         <maxResponseTimeMs>10000</maxResponseTimeMs>
         <successThreshold>95</successThreshold>
@@ -125,10 +126,33 @@
                         <jvmArg>-DtrsRequestsPerHour=${trsRequestsPerHour}</jvmArg>
                         <jvmArg>-DgithubNotificationsPerHour=${githubNotificationsPerHour}</jvmArg>
                         <jvmArg>-DcrawlerRequestsRps=${crawlerRequestsRps}</jvmArg>
+                        <jvmArg>-DmetricsRequestsPerMinute=${metricsRequestsPerMinute}</jvmArg>
                     </jvmArgs>
                 </configuration>
             </plugin>
 
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>execution-metrics</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.gatling</groupId>
+                        <artifactId>gatling-maven-plugin</artifactId>
+                        <version>${gatling-plugin.version}</version>
+                        <configuration>
+                            <runDescription>Execution Metrics, ramping requests from 1 request per second (RPS) to ${maxMetricsRPS} RPS</runDescription>
+                            <jvmArgs>
+                                <jvmArg>-DtimeInMinutes=${timeInMinutes}</jvmArg>
+                                <jvmArg>-DmaxMetricsRPS=${maxMetricsRPS}</jvmArg>
+                                <jvmArg>-DscenarioName=ExecutionsScenario</jvmArg>
+                            </jvmArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

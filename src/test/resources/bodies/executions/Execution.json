@@ -1,0 +1,22 @@
+{
+  "runExecutions": [
+    {
+      "executionId": "${executionId}",
+      "dateExecuted": "2023-03-31T15:06:49.888745366Z",
+      "additionalProperties": {
+        "@context": {
+          "schema": "https://schema.org"
+        },
+        "schema:actionStatus": "CompletedActionStatus"
+      },
+      "executionStatus": "SUCCESSFUL",
+      "executionTime": "PT30S",
+      "memoryRequirementsGB": 2,
+      "cpuRequirements": 2,
+      "cost": {
+        "value": 5.99
+      },
+      "region": "us-central1"
+    }
+  ]
+}
